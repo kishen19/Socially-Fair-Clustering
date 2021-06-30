@@ -1,5 +1,7 @@
 from random import randint
 from tqdm import tqdm
+from classes import Point, Center, Subspace, Affine
+# from convex_opt import 
 
 class ALGO:
     def __init__(self,data,k,z):
@@ -14,12 +16,13 @@ class ALGO:
         self.gen_partition()
         for iter_num in tqdm(range(num_iters)):
             new_centers,cost = [] # Call Convex Program
+            new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
             self.costs.append(cost)
-            self.reassign(new_centers)
+            self.reassign()
         self.centers = new_centers
 
     def gen_partition(self):
-        rand_no = [randint(1,self.k) for i in range(self.n)]
+        rand_no = [randint(self.k-1) for i in range(self.n)]
         for i,x in enumerate(self.data):
             x.cluster = rand_no[i]
 
@@ -34,5 +37,3 @@ class ALGO:
                     x.center = center
                     x.cluster = center.cluster
                     x.dist = new_dist
-
-    

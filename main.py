@@ -1,5 +1,5 @@
 from code.preprocess import credit_preprocess
-from code.classes import Point,Center,Subspace
+from code.classes import Point,Center,Subspace,Affine
 from code.algo import ALGO
 from coresets import coresets
 import pandas as pd

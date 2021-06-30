@@ -12,7 +12,7 @@ class Point:
 
 class Center:
     def __init__(self,coordinates,cluster=None):
-        self.cx= coordinates
+        self.cx= np.asarray(coordinates)
         self.size = 0
         self.cluster = cluster
 
@@ -28,6 +28,20 @@ class Center:
 class Subspace:
     def __init__(self,basis,cluster=None):
         self.basis = basis
+        self.cluster = cluster
+
+    def add_point(self,point):
+        self.size+=1
+        point.center = self
+        point.cluster = self.cluster
+
+    def distance(self,point):
+        pass
+
+class Affine:
+    def __init__(self,basis,translation,cluster=None):
+        self.basis = basis
+        self.b = translation
         self.cluster = cluster
 
     def add_point(self,point):
