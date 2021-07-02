@@ -12,18 +12,18 @@ from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 
 
-def clustering(k, d, ell, P, wts):
+def clustering(data, k, d, ell):
 
     # ~~~ parameters ~~~
     # k:    the number of clusters; python float
     # d:    dimension; python float
     # ell:  number of groups; python int
-    # P:    partition of the points; numpy 2D array; P[j][i] gives P_ji in the form of another numpy array
-    #       of dimension |P_ji| x d
+    # data: List of Point Objects
+    # Let P_{ji} be points of group j in cluster i
 
     # ~~~ convex program ~~~
     #     minimize    (0.c_1 + ... + 0.c_k) + t
-    #     subject to  \sum_{i \in [k]} \sum_{x \in P_{ji}} \norm{x - c_i}^2 <= t, forall j \in [\ell].
+    #     subject to  (\sum_{i \in [k]} \sum_{x \in P_{ji}} wt(x)*\norm{x - c_i}^2)/(\sum_{x \in P_{j}} wt(x)) <= t, forall j \in [\ell].
     #                       (non-linear constraints)
     # k+1 Variables:  c_1, ..., c_k and one scalar t.
     #
@@ -44,25 +44,45 @@ def clustering(k, d, ell, P, wts):
         # converting matrix x of shape k*d+1 to numpy array x_np of shape (k,d) ignoring the last element of x
         x_np = np.array(x[:-1])
         x_np = x_np.reshape((k,d))
-        # clustering cost minus t: \sum_{i \in [k]} \sum_{p \in P_{ji}} \norm{p - c_i}^2 - t.
+        # clustering cost minus t: (\sum_{i \in [k]} \sum_{p \in P_{ji}} wt(p)*\norm{p - c_i}^2)/(\sum_{p \in P_j} wt(p)) - t.
         # using p for points to avoid confusion with x, the variables.
         # here f is ell dimensional
         f = matrix(0.0, (ell, 1))
-         
+        wts = [[0 for i in range(k)] for j in range(ell)]
+        for p in data:
+            f[p.group] += p.weight*np.linalg.norm(x_np[p.cluster] - p.cx)**2
+            wts[p.group][p.cluster] += p.weight
+
         for j in range(ell):
-            f[j] = -x[-1] # minus t
-            for i in range(k):
-                for p in range(len(P[j][i])):
-                    f[j] += wts[j][i][p]*np.linalg.norm(P[j][i][p] - x_np[i])**2 ## change here for k,z clustering with z > 2
+            f[j] /= sum(wts[j])
+            f[j] -= x[-1]
+
+        # for j in range(ell):
+        #     f[j] = -x[-1] # minus t
+        #     for i in range(k):
+        #         for p in range(len(P[j][i])):
+        #             f[j] += wts[j][i][p]*np.linalg.norm(P[j][i][p] - x_np[i])**2 ## change here for k,z clustering with z > 2
 
 
         # computing gradients w.r.t. the centers
         Df = matrix(0.0, (ell,k*d+1))
+
         for j in range(ell):
             for i in range(k):
-                sum_p_ji = sum([wts[j][i][p]*P[j][i][p] for p in range(len(P[j][i]))]) # sum of the points belonging to jth group in the ith cluster
-                sum_w_ji = sum([wts[j][i][p] for p in range(len(P[j][i]))])
-                Df[j, i*d:(i+1)*d] = 2*(sum_w_ji*x_np[i] - sum_p_ji) ## change here for k,z clustering with z > 2
+                Df[j,i*d:(i+1)*d] = 2*(wts[j][i]*x_np[i])
+
+        for p in data:
+            Df[p.group,p.cluster*d:(p.cluster+1)*d] -= 2*p.weight*p.cx
+        
+        for j in range(ell):
+            Df[j,:] /= sum(wts[j])
+
+        # for j in range(ell):
+        #     for i in range(k):
+        #         sum_p_ji = sum([wts[j][i][p]*P[j][i][p] for p in range(len(P[j][i]))]) # sum of the points belonging to jth group in the ith cluster
+        #         sum_w_ji = sum([wts[j][i][p] for p in range(len(P[j][i]))])
+        #         Df[j, i*d:(i+1)*d] = 2*(sum_w_ji*x_np[i] - sum_p_ji) ## change here for k,z clustering with z > 2
+        
         Df[:,-1] = -1.0 # gradient w.r.t. the variable t.
         if z is None: return f, Df
 
@@ -72,8 +92,10 @@ def clustering(k, d, ell, P, wts):
         
         for j in range(ell):
             Dsr = matrix(0.0, (k*d+1, k*d+1))
+            sum_w_j = sum(wts[j])
             for i in range(k):
-                sum_w_ji = sum([wts[j][i][p] for p in range(len(P[j][i]))])
+                sum_w_ji = wts[j][i]/sum_w_j
+                # sum_w_ji = sum([wts[j][i][p] for p in range(len(P[j][i]))])
                 Dsr[i*d:(i+1)*d, i*d:(i+1)*d] = 2*sum_w_ji*np.eye(d)
             Dsr[ -1,-1] = 0.0 # double derivate w.r.t. t is 0
             H += z[j]*Dsr

@@ -1,10 +1,5 @@
-from random import randint
-from tqdm import tqdm
-import numpy as np
-
 from code.classes import Point, Center, Subspace, Affine
 from code.convex_opt import clustering
-
 
 class ALGO:
     def __init__(self,data,k,num_groups,z):
@@ -14,23 +9,22 @@ class ALGO:
         self.k = k
         self.z = z
         self.ell = num_groups
-        self.costs = []
+
+        self.cost = None
         self.centers = []
 
-    def run(self,num_iters):
-        self.gen_partition()
+    def run(self,num_iters,start_partition):
+        self.init_partition(start_partition)
         for iter_num in range(num_iters):
-            P,wts = self.categorize_data()
-            new_centers,cost = clustering(self.k,self.d,self.ell,P,wts) # Call Convex Program
+            new_centers,cost = clustering(self.data,self.k,self.d,self.ell) # Call Convex Program
             new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
-            self.costs.append(cost)
             self.reassign(new_centers)
         self.centers = new_centers
+        self.cost = cost
 
-    def gen_partition(self):
-        rand_no = [randint(0,self.k-1) for i in range(self.n)]
+    def init_partition(self,start_partition):
         for i,x in enumerate(self.data):
-            x.cluster = rand_no[i]
+            x.cluster = start_partition[i]
 
     def reassign(self,centers):
         for x in self.data:
@@ -43,11 +37,3 @@ class ALGO:
                     x.center = center
                     x.cluster = center.cluster
                     x.dist = new_dist
-    
-    def categorize_data(self):
-        P = [[[] for i in range(self.k)] for j in range(self.ell)]
-        wts = [[[] for i in range(self.k)] for j in range(self.ell)]
-        for x in self.data:
-            P[x.group][x.cluster].append(x.cx)
-            wts[x.group][x.cluster].append(x.weight)
-        return np.asarray(P),np.asarray(wts)
