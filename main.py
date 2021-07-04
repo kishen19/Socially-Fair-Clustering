@@ -1,5 +1,5 @@
 from code.solve import solve
-from code.preprocess import credit_preprocess
+from code.preprocess import credit_preprocess,LFW_preprocess
 from code.utilities import Socially_Fair_Clustering_Cost
 
 
@@ -7,12 +7,12 @@ def main():
     dataset = "credit"
     k = 10
     z = 2
-    num_iters = 10
+    num_iters = 5
 
     if dataset=="credit":
         data, svar, groups = credit_preprocess()
-    else:
-        pass
+    elif dataset=="LFW":
+        data, svar, groups = LFW_preprocess()
 
     centers, coreset_cost = solve(data,svar,groups,k,z,num_iters)
     cost = Socially_Fair_Clustering_Cost(data,svar,groups,centers,z)
