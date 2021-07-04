@@ -16,7 +16,7 @@ class ALGO:
     def run(self,num_iters,start_partition):
         self.init_partition(start_partition)
         for iter_num in range(num_iters):
-            new_centers,cost = clustering(self.data,self.k,self.d,self.ell) # Call Convex Program
+            new_centers,cost = clustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
             new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
             self.reassign(new_centers)
         self.centers = new_centers

@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 
 
-def clustering(data, k, d, ell):
+def clustering(data, k, d, ell, q):
 
     # ~~~ parameters ~~~
     # k:    the number of clusters; python float
@@ -50,56 +50,39 @@ def clustering(data, k, d, ell):
         f = matrix(0.0, (ell, 1))
         wts = [[0 for i in range(k)] for j in range(ell)]
         for p in data:
-            f[p.group] += p.weight*np.linalg.norm(x_np[p.cluster] - p.cx)**2
+            f[p.group] += p.weight*np.linalg.norm(x_np[p.cluster] - p.cx)**q
             wts[p.group][p.cluster] += p.weight
 
         for j in range(ell):
             f[j] /= sum(wts[j])
             f[j] -= x[-1]
 
-        # for j in range(ell):
-        #     f[j] = -x[-1] # minus t
-        #     for i in range(k):
-        #         for p in range(len(P[j][i])):
-        #             f[j] += wts[j][i][p]*np.linalg.norm(P[j][i][p] - x_np[i])**2 ## change here for k,z clustering with z > 2
-
-
         # computing gradients w.r.t. the centers
         Df = matrix(0.0, (ell,k*d+1))
 
-        for j in range(ell):
-            for i in range(k):
-                Df[j,i*d:(i+1)*d] = 2*(wts[j][i]*x_np[i])
-
         for p in data:
-            Df[p.group,p.cluster*d:(p.cluster+1)*d] -= 2*p.weight*p.cx
+            S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
+            Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
         
         for j in range(ell):
             Df[j,:] /= sum(wts[j])
 
-        # for j in range(ell):
-        #     for i in range(k):
-        #         sum_p_ji = sum([wts[j][i][p]*P[j][i][p] for p in range(len(P[j][i]))]) # sum of the points belonging to jth group in the ith cluster
-        #         sum_w_ji = sum([wts[j][i][p] for p in range(len(P[j][i]))])
-        #         Df[j, i*d:(i+1)*d] = 2*(sum_w_ji*x_np[i] - sum_p_ji) ## change here for k,z clustering with z > 2
-        
         Df[:,-1] = -1.0 # gradient w.r.t. the variable t.
+
         if z is None: return f, Df
 
-        
         # H = z_0*Dsr_0 + z_1*Dsr_1 + ... + z_{ell-1}*Dsr_{ell-1}
-        H = matrix(0.0, (k*d+1, k*d+1))
         
+        H_groups = [matrix(0.0, (k*d+1, k*d+1)) for i in range(ell)]
+        for p in data:
+            S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
+            H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
+            H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(q-2)*(p.weight/sum(wts[p.group]))*(S_p**(q/2-2))*np.matmul(np.transpose(np.asarray([x_np[p.cluster] - p.cx])),np.asarray([x_np[p.cluster] - p.cx]))
+
+        H = matrix(0.0, (k*d+1, k*d+1))
         for j in range(ell):
-            Dsr = matrix(0.0, (k*d+1, k*d+1))
-            sum_w_j = sum(wts[j])
-            for i in range(k):
-                sum_w_ji = wts[j][i]/sum_w_j
-                # sum_w_ji = sum([wts[j][i][p] for p in range(len(P[j][i]))])
-                Dsr[i*d:(i+1)*d, i*d:(i+1)*d] = 2*sum_w_ji*np.eye(d)
-            Dsr[ -1,-1] = 0.0 # double derivate w.r.t. t is 0
-            H += z[j]*Dsr
-            
+            H_groups[j][-1,-1] = 0.0
+            H += z[j]*H_groups[j]
         return f, Df, H
 
     
@@ -110,11 +93,6 @@ def clustering(data, k, d, ell):
     val = sol['x'][-1]
     centers = centers.reshape((k,d))
     return  centers, val
-
-
-
-
-
 
 
 
