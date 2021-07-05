@@ -12,7 +12,7 @@ from sklearn.preprocessing import StandardScaler
 from itertools import cycle, islice
 
 
-def clustering(data, k, d, ell, q):
+def kzclustering(data, k, d, ell, q):
 
     # ~~~ parameters ~~~
     # k:    the number of clusters; python float
@@ -94,8 +94,8 @@ def clustering(data, k, d, ell, q):
     centers = centers.reshape((k,d))
     return  centers, val
 
-
-
+def linearprojclustering(data,k,J,d,ell,q):
+    pass
 
 '''
 ####################### TOY DATASETS ########################

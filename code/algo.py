@@ -1,8 +1,8 @@
 from code.classes import Point, Center, Subspace, Affine
-from code.convex_opt import clustering
+from code.convex_opt import kzclustering,linearprojclustering
 
-class ALGO:
-    def __init__(self,data,k,num_groups,z):
+class Base:
+    def __init__(self,data,num_groups,k,z):
         self.data = data
         self.n = len(self.data)
         self.d = len(self.data[0].cx)
@@ -12,15 +12,6 @@ class ALGO:
 
         self.cost = None
         self.centers = []
-
-    def run(self,num_iters,start_partition):
-        self.init_partition(start_partition)
-        for iter_num in range(num_iters):
-            new_centers,cost = clustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
-            new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
-            self.reassign(new_centers)
-        self.centers = new_centers
-        self.cost = cost
 
     def init_partition(self,start_partition):
         for i,x in enumerate(self.data):
@@ -37,3 +28,32 @@ class ALGO:
                     x.center = center
                     x.cluster = center.cluster
                     x.dist = new_dist
+
+
+class KZClustering(Base):
+    def __init__(self,data,num_groups,k,z):
+        super().__init__(data,num_groups,k,z)
+
+    def run(self,num_iters,start_partition):
+        self.init_partition(start_partition)
+        for iter_num in range(num_iters):
+            new_centers,cost = kzclustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
+            new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
+            self.reassign(new_centers)
+        self.centers = new_centers
+        self.cost = cost
+
+
+class LinearProjClustering(Base):
+    def __init__(self,data,num_groups,k,J,z):
+        self.J = J
+        super().__init__(data,num_groups,k,z)
+
+    def run(self,num_iters,start_partition):
+        self.init_partition(start_partition)
+        for iter_num in range(num_iters):
+            new_centers,cost = linearprojclustering(self.data,self.k,self.J,self.d,self.ell,self.z) # Call Convex Program
+            new_centers = [Subspace(c,i) for i,c in enumerate(new_centers)]
+            self.reassign(new_centers)
+        self.centers = new_centers
+        self.cost = cost

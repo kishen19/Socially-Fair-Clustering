@@ -36,7 +36,7 @@ class Subspace:
         point.cluster = self.cluster
 
     def distance(self,point):
-        pass
+        return np.linalg.norm(self.basis @ point.cx)
 
 class Affine:
     def __init__(self,basis,translation,cluster=None):
