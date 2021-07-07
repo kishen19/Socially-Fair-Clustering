@@ -1,5 +1,8 @@
 from code.classes import Point, Center, Subspace, Affine
 from code.convex_opt import kzclustering,linearprojclustering
+import numpy as np
+import heapq
+from random import choice
 
 class Base:
     def __init__(self,data,num_groups,k,z):
@@ -53,7 +56,24 @@ class LinearProjClustering(Base):
         self.init_partition(start_partition)
         for iter_num in range(num_iters):
             new_centers,cost = linearprojclustering(self.data,self.k,self.J,self.d,self.ell,self.z) # Call Convex Program
-            new_centers = [Subspace(c,i) for i,c in enumerate(new_centers)]
+            new_centers = [Subspace(self.DTV10rounding(c),i) for i,c in enumerate(new_centers)]
             self.reassign(new_centers)
         self.centers = new_centers
         self.cost = cost
+    
+    def DTV10rounding(self,X):
+        # X is psd
+        s,x = np.linalg.eigh(X)
+        s,x = s[::-1],x[:,::-1]
+        r = len(s)
+        w = self.d - self.J
+        y = [np.zeros(self.d) for i in range(w)]
+        h = heapq.heapify([[0,i] for i in range(w)])
+        for i in range(r):
+            bi = choice([1,-1])
+            cur = heapq.heappop(h)
+            cur[0] += s[i]
+            y[cur[1]] += bi*np.sqrt(s[i])*x[:,i]
+            heapq.heappush(h,cur)
+        Z = np.asarray([y[i]/np.linalg.norm(y[i]) for i in range(w)]).T
+        return Z
