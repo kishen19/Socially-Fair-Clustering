@@ -130,9 +130,8 @@ def linearprojclustering(data, k, J, d, ell, q):
 
     # Print result.
     print("The optimal value is", prob.value)
-    print("A solution X is")
     
-    return X, prob.value
+    return [X[i].value for i in range(len(X))], prob.value
 
 '''
 ####################### TOY DATASETS ########################

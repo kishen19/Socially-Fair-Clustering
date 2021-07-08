@@ -65,10 +65,14 @@ class LinearProjClustering(Base):
         # X is psd
         s,x = np.linalg.eigh(X)
         s,x = s[::-1],x[:,::-1]
+        assert np.all(s >= -1e-5)
+        s = s[s>=1e-5]
+        x = x[:,:len(s)]
         r = len(s)
         w = self.d - self.J
         y = [np.zeros(self.d) for i in range(w)]
-        h = heapq.heapify([[0,i] for i in range(w)])
+        h = [[0,i] for i in range(w)]
+        heapq.heapify(h)
         for i in range(r):
             bi = choice([1,-1])
             cur = heapq.heappop(h)
