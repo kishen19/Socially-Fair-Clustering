@@ -8,7 +8,7 @@ def main():
     k = 1
     z = 2
     J = 10
-    num_iters = 5
+    num_iters = 1
 
     if dataset=="credit":
         data, svar, groups = credit_preprocess()

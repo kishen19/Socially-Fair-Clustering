@@ -1,5 +1,6 @@
 from random import randint
 import numpy as np
+from code.classes import Point
 
 def gen_rand_partition(n,k):
     return [randint(0,k-1) for i in range(n)]
@@ -10,7 +11,7 @@ def compute_cost(data,centers,z):
     for i in range(n):
         best = np.inf
         for center in centers:
-            best = min(best,np.linalg.norm(data.iloc[i] - center.cx)**z)
+            best = min(best,center.distance(Point(data.iloc[i],"dummy"))**z)
         cost += best
     return cost/n
 

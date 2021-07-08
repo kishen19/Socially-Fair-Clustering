@@ -1,5 +1,6 @@
 import pylab
 from cvxopt import solvers, matrix, spmatrix, mul, div
+import cvxpy as cp
 import numpy as np
 
 import time
@@ -94,22 +95,20 @@ def kzclustering(data, k, d, ell, q):
     centers = centers.reshape((k,d))
     return  centers, val
 
-def linearprojclustering(data, k, d, ell, q):
-    
-    n = len(data[0].cx)
+def linearprojclustering(data, k, J, d, ell, q):
     wts = [[0 for i in range(k)] for j in range(ell)]
     for p in data:
         wts[p.group][p.cluster] += p.weight
 
     X = []
     for i in range(k):
-        X.append(cp.Variable((n,n), symmetric=True))
+        X.append(cp.Variable((d,d), symmetric=True))
     t = cp.Variable()
 
     # The operator >> denotes matrix inequality.
     constraints = [X[i] >> 0 for i in range(k)]
-    constraints +=  [np.eye(n) >> X[i] for i in range(k)]
-    constraints += [cp.trace(X[i]) >= n-d for i in range(k)]
+    constraints +=  [np.eye(d) >> X[i] for i in range(k)]
+    constraints += [cp.trace(X[i]) >= d-J for i in range(k)]
     
     obj = [0 for j in range(ell)]
     

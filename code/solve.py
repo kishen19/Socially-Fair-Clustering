@@ -33,17 +33,16 @@ def solve_projective_linear(data,svar,groups,k,J,z,num_iters):
     for group in groups:
         data_group = data[np.asarray(svar)==group]
         coreset_gen = coresets.ProjectiveClusteringCoreset(data_group,n_clusters=k, J=J)
-        coreset_size = data_group.shape[0]//50
+        coreset_size = data_group.shape[0]//500
         print(coreset_size)
         coreset_group,weights = coreset_gen.generate_coreset(coreset_size)
         coreset_group = pd.DataFrame(coreset_group,columns=data.columns)
         coreset += [Point(coreset_group.iloc[i],group,weights[i]) for i in range(coreset_group.shape[0])]
-        print(weights)
+        # print(weights)
 
     # Step 2: Fair-Lloyd's Algorithm
     n = len(coreset)
     print(n)
     solver = LinearProjClustering(coreset,ell,k,J,z)
-    # solver.run(num_iters,gen_rand_partition(n,k))
-    # return solver.centers, solver.cost
-    return [],0
+    solver.run(num_iters,gen_rand_partition(n,k))
+    return solver.centers, solver.cost
