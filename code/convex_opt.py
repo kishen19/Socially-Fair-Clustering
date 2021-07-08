@@ -115,8 +115,11 @@ def linearprojclustering(data, k, d, ell, q):
     
     for p in data:
         cx = np.array([p.cx])
-        obj[p.group] += (p.weight/sum(wts[p.group]))*np.power( (cx@X[p.cluster])@np.transpose(cx), q*0.5) 
-
+        obj[p.group] += p.weight*np.power( (cx@X[p.cluster])@np.transpose(cx), q*0.5) 
+    
+    for j in range(ell):
+        obj[p.group] /= sum(wts[p.group]
+                            
     constraints += [obj[j] <= t for j in range(ell)]
     
     print("Number of constraints is", len(constraints))
