@@ -94,8 +94,43 @@ def kzclustering(data, k, d, ell, q):
     centers = centers.reshape((k,d))
     return  centers, val
 
-def linearprojclustering(data,k,J,d,ell,q):
-    pass
+def linearprojclustering(data, k, d, ell, q):
+    
+    n = len(data[0].cx)
+    wts = [[0 for i in range(k)] for j in range(ell)]
+    for p in data:
+        wts[p.group][p.cluster] += p.weight
+
+    X = []
+    for i in range(k):
+        X.append(cp.Variable((n,n), symmetric=True))
+    t = cp.Variable()
+
+    # The operator >> denotes matrix inequality.
+    constraints = [X[i] >> 0 for i in range(k)]
+    constraints +=  [np.eye(n) >> X[i] for i in range(k)]
+    constraints += [cp.trace(X[i]) >= n-d for i in range(k)]
+    
+    obj = [0 for j in range(ell)]
+    
+    for p in data:
+        cx = np.array([p.cx])
+        obj[p.group] += (p.weight/sum(wts[p.group]))*np.power( (cx@X[p.cluster])@np.transpose(cx), q*0.5) 
+
+    constraints += [obj[j] <= t for j in range(ell)]
+    
+    print("Number of constraints is", len(constraints))
+    # constraints += [np.sum( [wt_a/normalisationfactor*np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[:2]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[4:6]]) <= t]
+    # constraints += [np.sum( [np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[2:4]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[6:8]]) <= t]
+
+    prob = cp.Problem(cp.Minimize(t), constraints)
+    prob.solve()
+
+    # Print result.
+    print("The optimal value is", prob.value)
+    print("A solution X is")
+    
+    return X, prob.value
 
 '''
 ####################### TOY DATASETS ########################
