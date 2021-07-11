@@ -33,15 +33,22 @@ def solve_clustering(data,svar,groups,k,z,num_iters,init_centers):
     num_trials = len(init_centers)
     runtime = 0
     cor_cost = 0
-    cost = 0
-    for trial in range(num_trials):
+    costs = {group:0 for group in groups}
+
+    for trial in tqdm(range(num_trials)):
         incenters = init_centers[trial]
         centersi, cor_costi, runtimei = solver.run(num_iters,incenters)
         costi = Socially_Fair_Clustering_Cost(data,svar,groups,centersi,z)
         runtime += runtimei
         cor_cost += cor_costi
-        cost += costi
-    return cost/num_trials, cor_cost/num_trials, runtime/num_trials, _coreset_time
+
+        for group in groups:
+            costs[group] += costi[group]
+
+    for group in groups:
+        costs[group] /= num_trials
+
+    return costs, cor_cost/num_trials, runtime/num_trials, _coreset_time
 
 def solve_projective_linear(data,svar,groups,k,J,z,num_iters):
     ell = len(groups)

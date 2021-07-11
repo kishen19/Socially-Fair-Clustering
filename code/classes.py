@@ -66,7 +66,7 @@ class Dataset:
         self.result = {}
         self.init_centers = init_centers
 
-    def add_new_result(self, algorithm, k, num_iters, cost, running_time, coreset_cost, coreset_time):
+    def add_new_result(self, algorithm, k, num_iters, init_num, cost, running_time, coreset_cost, coreset_time):
         if algorithm not in self.result.keys():
             self.result[algorithm] = {}
 
@@ -74,7 +74,8 @@ class Dataset:
                         'coreset_cost': coreset_cost,
                         'running_time': running_time, 
                         'coreset_time': coreset_time,
-                        'num_iters': num_iters}
+                        'num_iters': num_iters,
+                        'init_num': init_num}
 
     def time_per_iteration(self, algorithm, k):
         return self.result[algorithm][k]['running_time']/self.result[algorithm][k]['num_iters']
