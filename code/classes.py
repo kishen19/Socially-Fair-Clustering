@@ -66,16 +66,16 @@ class Dataset:
         self.result = {}
         self.init_centers = init_centers
 
-    def add_new_result(self, algorithm, k, num_iters, init_num, cost, running_time, coreset_cost, coreset_time):
-        if algorithm not in self.result.keys():
+    def add_new_result(self, algorithm, k, init_num, num_iters, cost, running_time, coreset_cost, coreset_time):
+        if algorithm not in self.result:
             self.result[algorithm] = {}
-
-        self.result[algorithm][k] = {'cost': cost, 
+        if k not in self.result[algorithm]:
+            self.result[algorithm][k] = {}
+        self.result[algorithm][k][init_num] = {'cost': cost, 
                         'coreset_cost': coreset_cost,
                         'running_time': running_time, 
                         'coreset_time': coreset_time,
-                        'num_iters': num_iters,
-                        'init_num': init_num}
+                        'num_iters': num_iters}
 
     def time_per_iteration(self, algorithm, k):
         return self.result[algorithm][k]['running_time']/self.result[algorithm][k]['num_iters']
@@ -86,6 +86,7 @@ class Dataset:
     def coreset_cost(self, algorithm, k):
         return self.result[algorithm][k]['coreset_cost']
 
-    def k_vs_val(self, algorithm, y):
+    def k_vs_val(self, algorithm, val):
         ks = sorted(self.result[algorithm].keys())
-        return ks, [self.result[algorithm][k][y] for k in ks]    
+        vals = [np.sum([self.result[algorithm][k][init_num][val] for init_num in range(len(self.init_centers))])/len(self.init_centers) for k in self.result[algorithm]]
+        return ks, vals

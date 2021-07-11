@@ -32,7 +32,7 @@ def Socially_Fair_Clustering_Cost(data,svar,groups,centers,z):
 
 def plot(results, y):
     '''
-    resutls: list of Dataset objects; list
+    results: list of Dataset objects; list
     y: y-axis label; str
     '''
     plt.rcParams["figure.figsize"] = (15,7)

@@ -17,39 +17,36 @@ def get_sens(dataset,flag):
         svar,data,groups = data.iloc[:,0],data.iloc[:,1:],{0:"Higher Education",1:"Lower Education"}
     return svar,data,groups
 
-def pickle_data(q,flag):
+def pickle_data(q,name):
     while 1:
         m = q.get()
         if m == []:
             break
-        f = open("./results/"+m[0]+"/picklefile"+flag,"rb")
+        dataset = m[0]
+        f = open("./results/"+dataset+"/" + name + "_picklefile","rb")
         resultsP = pickle.load(f)
         f.close()
         resultsP.add_new_result(*m[1:])
-        f = open("./results/"+m[0]+"/picklefile"+flag,"wb")
+        f = open("./results/"+dataset+"/" + name + "_picklefile","wb")
         pickle.dump(resultsP,f)
         f.close()
 
 def get_result(args,q):
     algo,dataset,k,init_centers,num_iters,flag = args
     try:
-        print("Start: k="+str(k))
+        print(algo + ": Start: k="+str(k))
         sys.stdout.flush()
         svar,data,groups = get_sens(dataset,flag)
         if algo=="ALGO":
-            costs, coreset_cost, running_time, coreset_time = solve_clustering(data,svar,groups,k,2,num_iters,init_centers)
+            solve_clustering(dataset,data,svar,groups,k,2,num_iters,init_centers,q)
         else:
-            costs, running_time = lloyd(data,svar,groups,k,2,num_iters,init_centers)
-            coreset_cost, coreset_time = 0,0
-    except ArithmeticError:
-        print("Failed: k="+str(k))
+            lloyd(dataset,data,svar,groups,k,2,num_iters,init_centers,q)
+    except ArithmeticError as e:
+        print(algo + ": Failed: k="+str(k))
         print(e)
         sys.stdout.flush()
         return
-    
-    for group in groups:
-        q.put([dataset,algo+" ("+ groups[group] + ")",k,num_iters,costs[group],running_time,coreset_cost,coreset_time])
-    print("Done: k="+str(k))
+    print(algo + ": Done: k="+str(k))
     sys.stdout.flush()
 
 def main():
@@ -57,15 +54,19 @@ def main():
     datagen.dataNgen(dataset)
     # for k in range(2,17):
         # datagen.dataPgen(dataset,k)
-    flag = "N"
-    # flag = "P" # PCA
-    name="_woPCA"
-    # name="_wPCA" # PCA
+
+    namesuf="_woPCA"
+    # namesuf="_wPCA" # PCA
+
+    name = dataset + namesuf    
 
     # Generate Init_centers
-    init_centers = {k:[] for k in range(2,17)}
-    num_inits = 200
     k_vals = range(2,17)
+    init_centers = {k:[] for k in k_vals}
+    
+    num_inits = 200
+    num_iters = 200
+
     for k in k_vals:
         flag1 = "N"
         # flag1 = "P_K="+str(k) # PCA
@@ -75,28 +76,26 @@ def main():
             centers = [Center(data.iloc[mask[i],:],i) for i in range(k)]
             init_centers[k].append(centers)
 
-    results = Dataset(dataset+name, data.shape[0],data.shape[1],len(groups),init_centers)
-    f = open("./results/"+dataset+"/picklefile"+flag,"wb")
+    results = Dataset(name, data.shape[0],data.shape[1],len(groups),init_centers)
+    f = open("./results/"+dataset+"/" + name + "_picklefile","wb")
     pickle.dump(results,f)
     f.close()
 
-
-    num_iters = 200
-
-    f = open("./results/"+dataset+"/picklefile"+flag,"rb")
+    # Generating Output
+    f = open("./results/"+dataset+"/" + name + "_picklefile","rb")
     results = pickle.load(f)
     f.close()
 
     for algo in ['ALGO', 'lloyd']:
         manager = mp.Manager()
         q = manager.Queue()    
-        pool = mp.Pool(mp.cpu_count() + 2)
-        watcher = pool.apply_async(pickle_data, (q,flag))
+        pool = mp.Pool(mp.cpu_count() + 4)
+        watcher = pool.apply_async(pickle_data, (q,name))
         jobs = []
         for k in k_vals:
-            flag1 = "N"
-            # flag1 = "P_K="+str(k) # PCA
-            job = pool.apply_async(get_result,([algo,dataset,k,results.init_centers[k],num_iters,flag1],q))
+            flag = "N"
+            # flag = "P_K="+str(k) # PCA
+            job = pool.apply_async(get_result,([algo,dataset,k,results.init_centers[k],num_iters,flag],q))
             jobs.append(job)
         
         for job in jobs:
@@ -108,19 +107,16 @@ def main():
 
 def mainp():
     dataset="credit"
-    f = open("./results/"+dataset+"/picklefile"+"N","rb")
+    namesuf="_woPCA"
+    # namesuf="_wPCA" # PCA
+    name = dataset + namesuf   
+    f = open("./results/"+dataset+"/" + name + "_picklefile","rb")
     results = pickle.load(f)
     f.close()
     plot([results,results], 'cost')
-    plot([results,results], 'coreset_cost')
     plot([results,results], 'running_time')
-    # f = open("./results/"+dataset+"/picklefile"+"P","rb")
-    # resultsP = pickle.load(f)
-    # f.close()
-    # print(resultsP.result)
-    # plot([resultsP,resultsP], 'coreset_cost')
-    # plot([resultsP,resultsP], 'cost')
-    # plot([resultsP,resultsP], 'running_time')
+    # plot([results,results], 'coreset_cost')
+    
 
 
 if __name__=='__main__':

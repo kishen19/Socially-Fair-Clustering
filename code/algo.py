@@ -33,16 +33,16 @@ class Base:
 
 
 class KZClustering(Base):
-    def __init__(self,data,num_groups,k,z):
+    def __init__(self,data,num_groups,k,z,init_centers):
         super().__init__(data,num_groups,k,z)
+        self.centers = init_centers
 
-    def run(self,num_iters,init_centers):
+    def run(self):
         _st = time.time()
-        self.reassign(init_centers)
-        for iter_num in range(num_iters):
-            new_centers,cost = kzclustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
-            new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
-            self.reassign(new_centers)
+        self.reassign(self.centers)
+        new_centers,cost = kzclustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
+        new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
+        self.centers = new_centers
         _ed = time.time()
         return new_centers, cost, _ed-_st
 

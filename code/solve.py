@@ -9,7 +9,7 @@ from coresets import coresets
 from code.utilities import gen_rand_partition, gen_rand_centers, Socially_Fair_Clustering_Cost
 
 
-def solve_clustering(data,svar,groups,k,z,num_iters,init_centers):
+def solve_clustering(dataset,data,svar,groups,k,z,num_iters,init_centers,q):
     ell = len(groups)
     n = data.shape[0]
     # Step 1: Compute Coreset
@@ -29,26 +29,24 @@ def solve_clustering(data,svar,groups,k,z,num_iters,init_centers):
         coreset += [Point(coreset_group[i],group,weights[i]) for i in range(coreset_group_size)]
 
     # Step 2: Fair-Lloyd's Algorithm
-    solver = KZClustering(coreset,ell,k,z)
-    num_trials = len(init_centers)
-    runtime = 0
-    cor_cost = 0
-    costs = {group:0 for group in groups}
-
-    for trial in tqdm(range(num_trials)):
-        incenters = init_centers[trial]
-        centersi, cor_costi, runtimei = solver.run(num_iters,incenters)
-        costi = Socially_Fair_Clustering_Cost(data,svar,groups,centersi,z)
-        runtime += runtimei
-        cor_cost += cor_costi
-
-        for group in groups:
-            costs[group] += costi[group]
-
-    for group in groups:
-        costs[group] /= num_trials
-
-    return costs, cor_cost/num_trials, runtime/num_trials, _coreset_time
+    num_inits = len(init_centers)
+    solvers = [KZClustering(coreset,ell,k,z,init_centers[i]) for i in range(num_inits)]
+    runtimes = [0]*num_inits
+    cor_cost = [0]*num_inits
+    costs = [{group:0 for group in groups} for i in range(num_inits)]
+    store_iters = set([1,5,10,20,50,100,num_iters])
+    for iter in tqdm(range(1,num_iters+1)):
+        for init in range(num_inits):
+            centersi, cor_costi, runtimei = solvers[init].run()
+            costi = Socially_Fair_Clustering_Cost(data,svar,groups,centersi,z)
+            runtimes[init] += runtimei
+            cor_cost[init] = cor_costi
+            for group in groups:
+                costs[init][group] = costi[group]
+        if iter in store_iters:
+            for init in range(num_inits):
+                for group in groups:
+                    q.put([dataset,"ALGO"+" ("+ groups[group] + ")",k,init,iter,costs[init][group],runtimes[init],cor_cost[init],_coreset_time])
 
 def solve_projective_linear(data,svar,groups,k,J,z,num_iters):
     ell = len(groups)
