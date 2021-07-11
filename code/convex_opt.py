@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn import cluster, datasets, mixture
 from sklearn.neighbors import kneighbors_graph
 from sklearn.preprocessing import StandardScaler
-from itertools import cycle, islice
+
 
 
 def kzclustering(data, k, d, ell, q):
@@ -88,7 +88,7 @@ def kzclustering(data, k, d, ell, q):
 
     
     # solve and return c_1, ..., c_k, t
-    
+    solvers.options['show_progress'] = False
     sol = solvers.cpl(c, F)
     centers = np.array(sol['x'][:-1])
     val = sol['x'][-1]
@@ -126,7 +126,7 @@ def linearprojclustering(data, k, J, d, ell, q):
     # constraints += [np.sum( [np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[2:4]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[6:8]]) <= t]
 
     prob = cp.Problem(cp.Minimize(t), constraints)
-    prob.solve()
+    prob.solve(solver=cp.MOSEK)
 
     # Print result.
     print("The optimal value is", prob.value)

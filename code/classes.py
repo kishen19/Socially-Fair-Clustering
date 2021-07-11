@@ -9,6 +9,10 @@ class Point:
         self.cluster = cluster
         self.dist = np.inf
 
+    def reset(self):
+        self.dist = np.inf
+        self.center = None
+        self.cluster = None
 
 class Center:
     def __init__(self,coordinates,cluster=None):
@@ -54,21 +58,22 @@ class Affine:
         pass
     
 class Dataset:
-    def __init__(self, name, n, m, ell):
+    def __init__(self, name, n, d, ell, init_centers):
         self.name = name
-        self.n = n
-        self.m = m # no. of points
+        self.n = n # no. of points
+        self.d = d
         self.ell = ell
         self.result = {}
+        self.init_centers = init_centers
 
-    
-    def add_new_result(self, algorithm, k, cost, coreset_cost, running_time, num_iters):
+    def add_new_result(self, algorithm, k, num_iters, cost, running_time, coreset_cost, coreset_time):
         if algorithm not in self.result.keys():
             self.result[algorithm] = {}
 
         self.result[algorithm][k] = {'cost': cost, 
                         'coreset_cost': coreset_cost,
                         'running_time': running_time, 
+                        'coreset_time': coreset_time,
                         'num_iters': num_iters}
 
     def time_per_iteration(self, algorithm, k):
@@ -78,7 +83,8 @@ class Dataset:
         return self.result[algorithm][k]['cost']
 
     def coreset_cost(self, algorithm, k):
-        return self.result[algorithm][k]['coreset_cost']    
+        return self.result[algorithm][k]['coreset_cost']
 
     def k_vs_val(self, algorithm, y):
-        return self.result[algorithm].keys(), [v[y] for v in self.result[algorithm].values()]    
+        ks = sorted(self.result[algorithm].keys())
+        return ks, [self.result[algorithm][k][y] for k in ks]    
