@@ -83,47 +83,53 @@ def init_dataset(dataset,name,num_inits,coreset_sizes,k,isPCA=False):
                 resultsk.add_new_result("ALGO"+" ("+ groups[group] + ")",k,init,cor_num,0,0,0,0,_coreset_time,init_centers[init])
     for init in range(num_inits):
         for group in groups:
-            resultsk.add_new_result("Lloyd"+" ("+ groups[group] + ")",k,init,"NA",0,0,0,0,_coreset_time,init_centers[init])
+            resultsk.add_new_result("Lloyd"+" ("+ groups[group] + ")",k,init,0,0,0,0,0,_coreset_time,init_centers[init])
 
     f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
     pickle.dump(resultsk,f)
     f.close()
 
 def main():
-    dataset = "credit"
+    dataset = "adult"
     datagen.dataNgen(dataset)
     isPCA = False
     if isPCA:
-        for k in range(2,17):
+        for k in range(4,17,2):
             datagen.dataPgen(dataset,k)
 
     namesuf="_wPCA" if isPCA else "_woPCA"
     name = dataset + namesuf    
 
     # Generate Init_centers
-    k_vals = range(4,5)
+    k_vals = range(4,17,2)
     algos = ['Lloyd','ALGO']
-    num_inits = 5
-    num_iters = 5
-    coreset_sizes = [1000,1000]
+    num_inits = 10
+    num_iters = 100
+    coreset_sizes = [1000,2000,3000,4000,5000]
+    z = 2
 
     for k in k_vals:
         init_dataset(dataset, name, num_inits, coreset_sizes, k, isPCA)
     
-    # Generating Output
-    for algo in algos:    
-        pool = mp.Pool(mp.cpu_count() + 4)
-        jobs = []
-        for k in k_vals:
-            flag = "P_K="+str(k) if isPCA else "N"
-            job = pool.apply_async(get_result,([algo,dataset,name,k,num_iters,flag],))
-            jobs.append(job)
-        
-        for job in jobs:
-            job.get()
-        pool.close()
-        pool.join()
+    
 
+    for algo in algos:
+        if algo == 'Lloyd':
+            pool = mp.Pool(mp.cpu_count() + 4)
+            jobs = []
+            for k in k_vals:
+                flag = "P_K="+str(k) if isPCA else "N"
+                job = pool.apply_async(get_result,([algo,dataset,name,k,num_iters,flag],))
+                jobs.append(job)
+            
+            for job in jobs:
+                job.get()
+            pool.close()
+            pool.join()
+        else:
+            for iter in tqdm(range(1,num_iters+1)):
+                solve_clustering(dataset,name,k_vals,z,iter)
+                
 
 if __name__=='__main__':
     main()

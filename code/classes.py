@@ -68,9 +68,19 @@ class Dataset:
         self.dataP = [] # For PCA
         self.coresets = {}
         self.result = {}
+        self.isPCA = False
 
     def add_PCA_data(self,data):
+        self.isPCA = True
         self.dataP = data
+        self.PCA_d = data.shape[1]
+
+    
+    def get_params(self):
+        if self.isPCA:
+            return self.n, self.PCA_d, self.ell
+        else:
+            return self.n, self.d, self.ell
 
     def add_coreset(self,k,coreset):
         if k not in self.coresets:
@@ -91,6 +101,7 @@ class Dataset:
                         'num_iters': num_iters,
                         'centers':centers}
 
+    
     def k_vs_val(self, algorithm, val):
         ks = sorted(self.result[algorithm].keys())
         if val=="running_time":
@@ -101,7 +112,7 @@ class Dataset:
                     for init in self.result[algorithm][k][cor_num]:
                         runtime.append(self.result[algorithm][k][cor_num][init][val])
                 vals.append(np.mean(runtime))
-        elif val=="cost":
+        elif val=="cost" or val=="coreset_cost":
             algos = sorted([algo for algo in self.result if algo[:5]==algorithm[:5]])
             w = algos.index(algorithm)
             vals = []
