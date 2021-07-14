@@ -5,6 +5,27 @@ import heapq
 from random import choice
 import time
 
+def reassign(data,centers):
+    for x in data:
+        x.reset()
+        for center in centers:
+            new_dist = center.distance(x)
+            if new_dist < x.dist:
+                if x.center:
+                    x.center.size-=1
+                center.size+=1
+                x.center = center
+                x.cluster = center.cluster
+                x.dist = new_dist
+
+def run(data,centers,k,d,ell,z):
+    reassign(data,centers)
+    _st = time.time()
+    new_centers,cost = kzclustering(data,k,d,ell,z) # Call Convex Program
+    _ed = time.time()
+    new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
+    return new_centers, cost, _ed-_st
+
 class Base:
     def __init__(self,data,num_groups,k,z):
         self.data = data
@@ -33,17 +54,15 @@ class Base:
 
 
 class KZClustering(Base):
-    def __init__(self,data,num_groups,k,z,init_centers):
+    def __init__(self,data,num_groups,k,z):
         super().__init__(data,num_groups,k,z)
-        self.centers = init_centers
 
     def run(self):
         _st = time.time()
-        self.reassign(self.centers)
         new_centers,cost = kzclustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
-        new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
-        self.centers = new_centers
         _ed = time.time()
+        new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
+        self.reassign(new_centers)
         return new_centers, cost, _ed-_st
 
 

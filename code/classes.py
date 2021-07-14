@@ -58,35 +58,61 @@ class Affine:
         pass
     
 class Dataset:
-    def __init__(self, name, n, d, ell, init_centers):
+    def __init__(self, name, data, svar, groups):
         self.name = name
-        self.n = n # no. of points
-        self.d = d
-        self.ell = ell
+        self.data = data
+        self.n,self.d = data.shape # no. of points
+        self.svar = svar
+        self.groups = groups
+        self.ell = len(groups)
+        self.dataP = [] # For PCA
+        self.coresets = {}
         self.result = {}
-        self.init_centers = init_centers
 
-    def add_new_result(self, algorithm, k, init_num, num_iters, cost, running_time, coreset_cost, coreset_time):
+    def add_PCA_data(self,data):
+        self.dataP = data
+
+    def add_coreset(self,k,coreset):
+        if k not in self.coresets:
+            self.coresets[k] = []
+        self.coresets[k].append(coreset)
+
+    def add_new_result(self, algorithm, k, init_num, coreset_num, num_iters, cost, running_time, coreset_cost, coreset_time, centers):
         if algorithm not in self.result:
             self.result[algorithm] = {}
         if k not in self.result[algorithm]:
             self.result[algorithm][k] = {}
-        self.result[algorithm][k][init_num] = {'cost': cost, 
+        if coreset_num not in self.result[algorithm][k]:
+            self.result[algorithm][k][coreset_num] = {}
+        self.result[algorithm][k][coreset_num][init_num] = {'cost': cost, 
+                        'running_time': running_time,
                         'coreset_cost': coreset_cost,
-                        'running_time': running_time, 
                         'coreset_time': coreset_time,
-                        'num_iters': num_iters}
-
-    def time_per_iteration(self, algorithm, k):
-        return self.result[algorithm][k]['running_time']/self.result[algorithm][k]['num_iters']
-    
-    def cost(self, algorithm, k):
-        return self.result[algorithm][k]['cost']
-
-    def coreset_cost(self, algorithm, k):
-        return self.result[algorithm][k]['coreset_cost']
+                        'num_iters': num_iters,
+                        'centers':centers}
 
     def k_vs_val(self, algorithm, val):
         ks = sorted(self.result[algorithm].keys())
-        vals = [np.sum([self.result[algorithm][k][init_num][val] for init_num in range(len(self.init_centers))])/len(self.init_centers) for k in self.result[algorithm]]
+        if val=="running_time":
+            vals = []
+            for k in self.result[algorithm]:
+                runtime = []
+                for cor_num in self.result[algorithm][k]:
+                    for init in self.result[algorithm][k][cor_num]:
+                        runtime.append(self.result[algorithm][k][cor_num][init][val])
+                vals.append(np.mean(runtime))
+        elif val=="cost":
+            algos = sorted([algo for algo in self.result if algo[:5]==algorithm[:5]])
+            w = algos.index(algorithm)
+            vals = []
+            for k in self.result[algorithm]:
+                cost = np.asarray([np.inf for algo in algos])
+                for cor_num in self.result[algorithm][k]:
+                    for init in self.result[algorithm][k][cor_num]:
+                        if max(cost) > max([self.result[algo][k][cor_num][init][val] for algo in algos]):
+                            cost = [self.result[algo][k][cor_num][init][val] for algo in algos]
+                vals.append(cost[w])
+        else:
+            print("Error")
+            exit(1)
         return ks, vals

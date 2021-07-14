@@ -1,28 +1,31 @@
 from sklearn.cluster import KMeans
 import time
 import numpy as np
+from tqdm import tqdm
+import pickle
 
 from code.utilities import Socially_Fair_Clustering_Cost
 from code.classes import Center
 
-def lloyd(dataset,data,svar,groups,k,z,num_iters,init_centers,q):
+def lloyd(dataset,name,data,svar,groups,k,z,num_iters):
+    f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
+    results = pickle.load(f)
+    f.close()
+    n,d = data.shape
     ell = len(groups)
-    n = data.shape[0]
-    num_inits = len(init_centers)
-    runtimes = [0]*num_inits
-    costs = [{group:0 for group in groups} for i in range(num_inits)]
+    algos = [algo for algo in results.result if algo[:5]=="Lloyd"]
     X = np.asarray(data)
-    for init in range(num_inits):
-        incenters = np.asarray([x.cx for x in init_centers[init]])
-        _st = time.time()
-        kmeans = KMeans(n_clusters=k,init=incenters,n_init=1,max_iter=100).fit(X)
-        _ed = time.time()
-        centersi, runtimei = [Center(x,i) for i,x in enumerate(kmeans.cluster_centers_)], _ed-_st
-        costsi = Socially_Fair_Clustering_Cost(data,svar,groups,centersi,z)
-        runtimes[init] = runtimei
-        for group in groups:
-            costs[init][group] = costsi[group]
-    
-    for init in range(num_inits):
-        for group in groups:
-            q.put([dataset,"Lloyd"+" ("+ groups[group] + ")",k,init,num_iters,costs[init][group],runtimes[init],0,0])
+    for init in results.result[algos[0]][k]["NA"]:
+        if results.result[algos[0]][k]["NA"][init]["num_iters"] < num_iters:
+            centers = np.asarray([x.cx for x in results.result[algos[0]][k]["NA"][init]["centers"]])
+            _st = time.time()
+            kmeans = KMeans(n_clusters=k,init=centers,n_init=1,max_iter=num_iters-results.result[algos[0]][k]["NA"][init]["num_iters"]).fit(X)
+            _ed = time.time()
+            new_centers, runtime = [Center(x,i) for i,x in enumerate(kmeans.cluster_centers_)], _ed-_st
+            for algo in algos:
+                results.result[algo][k]["NA"][init]["running_time"] += runtime
+                results.result[algo][k]["NA"][init]["centers"] = new_centers
+                results.result[algo][k]["NA"][init]["num_iters"] = num_iters
+    f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
+    pickle.dump(results,f)
+    f.close()

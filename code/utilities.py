@@ -30,6 +30,24 @@ def Socially_Fair_Clustering_Cost(data,svar,groups,centers,z):
         costs[group] = group_cost
     return costs
 
+def compute_wcost(data,centers,z):
+    cost = 0
+    n = len(data)
+    for i in range(n):
+        best = np.inf
+        for center in centers:
+            best = min(best,center.distance(data[i])**z)
+        cost += data[i].weight*best
+    return cost/sum([p.weight for p in data])
+
+def wSocially_Fair_Clustering_Cost(data,groups,centers,z):
+    costs = {}
+    for group in groups:
+        data_group = [x for x in data if x.group==group]
+        group_cost = compute_wcost(data_group,centers,z)
+        costs[group] = group_cost
+    return costs
+
 def plot(results, y):
     '''
     results: list of Dataset objects; list
@@ -58,7 +76,7 @@ def plot(results, y):
         if i==0:
             axs[i].set_ylabel(y)
         
-    plt.savefig(dataset.name+'_fig_sociallyFairClustering_'+y+'.png')
+    plt.savefig("./plots/"+dataset.name+'_fig_sociallyFairClustering_'+y+'.png')
 
 
 

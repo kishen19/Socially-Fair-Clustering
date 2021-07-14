@@ -2,51 +2,40 @@ import pandas as pd
 import numpy as np
 import time
 from tqdm import tqdm
+import pickle
 
 from code.classes import Point,Center,Subspace,Affine
-from code.algo import KZClustering, LinearProjClustering
+from code.algo import LinearProjClustering, run
 from coresets import coresets
-from code.utilities import gen_rand_partition, gen_rand_centers, Socially_Fair_Clustering_Cost
+from code.utilities import gen_rand_partition, Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost
 
 
-def solve_clustering(dataset,data,svar,groups,k,z,num_iters,init_centers,q):
+def solve_clustering(dataset,name,data,svar,groups,k,z,num_iters,is_PCA=0):
+    f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
+    results = pickle.load(f)
+    f.close()
+    n,d = data.shape
     ell = len(groups)
-    n = data.shape[0]
-    # Step 1: Compute Coreset
-    coreset = []
-    coreset_size = 1000
-    rem = coreset_size
-    _coreset_time = 0
-    for ind,group in enumerate(groups):
-        data_group = data[np.asarray(svar)==group]
-        coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k)
-        coreset_group_size = int(data_group.shape[0]*coreset_size/n) if ind<ell-1 else rem
-        rem-=coreset_group_size
-        _st = time.time()
-        coreset_group, weights = coreset_gen.generate_coreset(coreset_group_size)
-        _ed = time.time()
-        _coreset_time += (_ed - _st)
-        coreset += [Point(coreset_group[i],group,weights[i]) for i in range(coreset_group_size)]
-
-    # Step 2: Fair-Lloyd's Algorithm
-    num_inits = len(init_centers)
-    solvers = [KZClustering(coreset,ell,k,z,init_centers[i]) for i in range(num_inits)]
-    runtimes = [0]*num_inits
-    cor_cost = [0]*num_inits
-    costs = [{group:0 for group in groups} for i in range(num_inits)]
+    algos = [algo for algo in results.result if algo[:4]=="ALGO"]
     store_iters = set([1,5,10,20,50,100,num_iters])
+    store_iters = [num_iters]
     for iter in tqdm(range(1,num_iters+1)):
-        for init in range(num_inits):
-            centersi, cor_costi, runtimei = solvers[init].run()
-            costi = Socially_Fair_Clustering_Cost(data,svar,groups,centersi,z)
-            runtimes[init] += runtimei
-            cor_cost[init] = cor_costi
-            for group in groups:
-                costs[init][group] = costi[group]
+        for cor_num in results.result[algos[0]][k]:
+            coreset = results.coresets[k][cor_num]
+            for init in results.result[algos[0]][k][cor_num]:
+                if results.result[algos[0]][k][cor_num][init]["num_iters"]==iter-1:              
+                    # Step 2: Fair-Lloyd's Algorithm
+                    centers = results.result[algos[0]][k][cor_num][init]["centers"]
+                    new_centers, cpcost, runtime = run(coreset,centers,k,d,ell,z)
+                    for algo in algos:
+                        results.result[algo][k][cor_num][init]["centers"] = new_centers
+                        results.result[algo][k][cor_num][init]["num_iters"] += 1
+                        results.result[algo][k][cor_num][init]["running_time"] += runtime
+
         if iter in store_iters:
-            for init in range(num_inits):
-                for group in groups:
-                    q.put([dataset,"ALGO"+" ("+ groups[group] + ")",k,init,iter,costs[init][group],runtimes[init],cor_cost[init],_coreset_time])
+            f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
+            pickle.dump(results,f)
+            f.close()
 
 def solve_projective_linear(data,svar,groups,k,J,z,num_iters):
     ell = len(groups)
