@@ -28,6 +28,9 @@ class Center:
     def distance(self,point):
         return np.linalg.norm(self.cx-point.cx)
 
+    def distance_(self,point):
+        return np.linalg.norm(self.cx-point)
+
 
 class Subspace:
     def __init__(self,basis,cluster=None):

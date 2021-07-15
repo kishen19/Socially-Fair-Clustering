@@ -26,6 +26,13 @@ def run(data,centers,k,d,ell,z):
     new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
     return new_centers, cost, _ed-_st
 
+def run_final(data,k,d,ell,z):
+    _st = time.time()
+    new_centers,cost = kzclustering(data,k,d,ell,z) # Call Convex Program
+    _ed = time.time()
+    new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
+    return new_centers, cost, _ed-_st
+
 class Base:
     def __init__(self,data,num_groups,k,z):
         self.data = data

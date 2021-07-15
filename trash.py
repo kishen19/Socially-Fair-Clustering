@@ -6,7 +6,7 @@ import multiprocessing as mp
 from code.algo import run_final
 from code.utilities import plot
 from code.classes import Dataset, Point, Center
-from code.utilities import Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost
+from code.utilities import Socially_Fair_Clustering_Cost
 
 def compute_centers_lloyd(data,k,d):
     centers = np.zeros((k,d))
@@ -25,14 +25,6 @@ def update(results,q,mdict):
         algo,k,cor_num,init,cost,coreset_cost = m
         results.result[algo][k][cor_num][init]["cost"] = cost
         results.result[algo][k][cor_num][init]["coreset_cost"] = coreset_cost
-    
-def process(args,q):
-    k,cor_num,init,alg,z,centers,data,svar,groups,coresets = args
-    costs = Socially_Fair_Clustering_Cost(data,svar,groups,centers,z)
-    corcosts = wSocially_Fair_Clustering_Cost(coresets,groups,centers,z)
-                        
-    for group in groups:
-        q.put([alg+" (" + groups[group] + ")",k,cor_num,init,costs[group],corcosts[group]])
 
 def processPCA(args,q):
     k,cor_num,init,alg,n,d,ell,z,centers,data,svar,groups,dataP = args
@@ -45,16 +37,13 @@ def processPCA(args,q):
             if new_dist < best:
                 X[i].cluster = center.cluster
                 best = new_dist
-    if alg=="Lloyd":
-        new_centers = compute_centers_lloyd(X,k,d)
-    else:
-        new_centers,cpcost,runtime = run_final(X,k,d,ell,z)
+    new_centers = compute_centers_lloyd(X,k,d)
     costs = Socially_Fair_Clustering_Cost(data,svar,groups,new_centers,z)
     for group in groups:
         q.put([alg+" (" + groups[group] + ")",k,cor_num,init,costs[group],0])
 
 def compute_costs(results,z):
-    algos = sorted(set([algo[:5].strip() for algo in results.result]))
+    algos = ["Lloyd"]
     manager = mp.Manager()
     mdict = manager.dict()
     q = manager.Queue()
@@ -70,10 +59,7 @@ def compute_costs(results,z):
                         centers = results.result[algo][k][cor_num][init]["centers"]
                         job = pool.apply_async(processPCA,([k,cor_num,init,alg,results.n,results.d,results.ell,z,centers,results.data,results.svar,results.groups,results.dataP],q))
                         jobs.append(job)
-                    else:
-                        centers = results.result[algo][k][cor_num][init]["centers"]
-                        job = pool.apply_async(process,([k,cor_num,init,alg,z,centers,results.data,results.svar,results.groups, results.coresets[k][cor_num]],q)) 
-                        jobs.append(job)
+
     for job in jobs:
         job.get()
 
@@ -91,7 +77,9 @@ def main():
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset + namesuf
     k_vals = range(4,17,2)
-    results = Dataset(name,np.random.randint(0,100,(10,10)),np.random.randint(0,100,10),{})
+    f = open("./results/"+dataset+"/" + name + "_picklefile","rb")
+    results = pickle.load(f)
+    f.close()
     for k in tqdm(k_vals):
         f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
         resultsk = pickle.load(f)
@@ -101,25 +89,22 @@ def main():
         pickle.dump(resultsk,f)
         f.close()
         for algo in resultsk.result:
-            if algo not in results.result:
-                results.result[algo] = {}
-            results.result[algo][k] = resultsk.result[algo][k]
+            if algo[:5]=="Lloyd":
+                results.result[algo][k] = resultsk.result[algo][k]
 
     f = open("./results/"+dataset+"/" + name + "_picklefile","wb")
     pickle.dump(results,f)
     f.close()
     
-    f = open("./results/"+dataset+"/" + name + "_picklefile","rb")
-    results = pickle.load(f)
-    f.close()
-    algos = sorted(algo for algo in results.result)
-    print(algos)
     
-    for i in range(0,len(algos),2):
-        for k in results.result[algos[i]]:
-            for cor_num in results.result[algos[i]][k]:
-                for init in results.result[algos[i]][k][cor_num]:
-                    print("k=",k,"cor_num=",cor_num,"iters=",results.result[algos[i+1]][k][cor_num][init]["num_iters"],algos[i][:5],"cost=",results.result[algos[i]][k][cor_num][init]["cost"],algos[i][:5],"cost=",results.result[algos[i+1]][k][cor_num][init]["cost"], "runtime=",results.result[algos[i+1]][k][cor_num][init]["running_time"])
+    # algos = sorted(algo for algo in results.result)
+    # print(algos)
+    
+    # for i in range(0,len(algos),2):
+    #     for k in results.result[algos[i]]:
+    #         for cor_num in results.result[algos[i]][k]:
+    #             for init in results.result[algos[i]][k][cor_num]:
+    #                 print("k=",k,"cor_num=",cor_num,"iters=",results.result[algos[i+1]][k][cor_num][init]["num_iters"],algos[i][:5],"cost=",results.result[algos[i]][k][cor_num][init]["cost"],algos[i][:5],"cost=",results.result[algos[i+1]][k][cor_num][init]["cost"], "runtime=",results.result[algos[i+1]][k][cor_num][init]["running_time"])
     
     plot([results,results], 'cost')
     plot([results,results], 'running_time')
