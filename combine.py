@@ -5,8 +5,16 @@ import multiprocessing as mp
 
 from code.algo import run_final
 from code.utilities import plot
-from code.classes import Dataset, Point
+from code.classes import Dataset, Point, Center
 from code.utilities import Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost
+
+def compute_centers_lloyd(data,k,d):
+    centers = np.zeros((k,d))
+    num = np.zeros(k)
+    for x in data:
+        centers[x.cluster] += x.cx
+        num[x.cluster]+=1
+    return [Center(centers[i]/num[i],i) for i in range(k)]
 
 def update(results,q,mdict):
     while 1:
@@ -37,7 +45,10 @@ def processPCA(args,q):
             if new_dist < best:
                 X[i].cluster = center.cluster
                 best = new_dist
-    new_centers,cpcost,runtime = run_final(X,k,d,ell,z)
+    if alg=="Lloyd":
+        new_centers = compute_centers_lloyd(X,k,d)
+    else:
+        new_centers,cpcost,runtime = run_final(X,k,d,ell,z)
     costs = Socially_Fair_Clustering_Cost(data,svar,groups,new_centers,z)
     for group in groups:
         q.put([alg+" (" + groups[group] + ")",k,cor_num,init,costs[group],0])
