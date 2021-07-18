@@ -24,24 +24,29 @@ class KMeansCoreset(Coreset):
         init : for avaiable types, please refer to sklearn.cluster.k_means_._init_centroids
             Method for initialization
         random_state : int, RandomState instance or None, optional (default=None)
+        method: FL11 or BLK17
 
     References
     ----------
         [1] Bachem, O., Lucic, M., & Krause, A. (2017). Practical coreset constructions
         for machine learning. arXiv preprint arXiv:1703.06476.
+        [2] Feldman, D. and Langberg,  (2011). A Unified Framework
     """
 
-    def __init__(self, X, n_clusters, w=None, init="k-means++", random_state=None):
-        self.n_clusters = n_clusters
+    def __init__(self, X, n_clusters, w=None, init="k-means++", random_state=None, method="FL11"):
         self.init = init
-        super(KMeansCoreset, self).__init__(X, w, random_state)
+        super(KMeansCoreset, self).__init__(X, n_clusters, w, random_state,method)
 
     def calc_sampling_distribution(self):
         x_squared_norms = row_norms(self.X, squared=True)
         kmeans = KMeans(self.n_clusters)
         centers = kmeans._init_centroids(self.X, init = self.init, random_state=self.random_state,
                                   x_squared_norms=x_squared_norms)
-        sens = sensitivity.kmeans_sensitivity(self.X, self.w, centers, max(np.log(self.n_clusters), 1))
+        self.centers = centers
+        if self.method=="FL11":
+            sens = sensitivity.FL11_sensitivity(self.X, self.w, centers, max(np.log(self.n_clusters), 1))
+        else:
+            sens = sensitivity.BLK17_sensitivity(self.X, self.w, centers, max(np.log(self.n_clusters), 1))
         self.p = sens / np.sum(sens)
 
 

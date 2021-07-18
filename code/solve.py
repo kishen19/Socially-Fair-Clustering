@@ -1,18 +1,17 @@
 import pandas as pd
 import numpy as np
-import time
 from tqdm import tqdm
 import pickle
 import multiprocessing as mp
 import sys
 
-from code.classes import Point,Center,Subspace,Affine
-from code.algo import LinearProjClustering, run
+from utils.classes import Point
+from utils.utilities import gen_rand_partition
+from code.algo import run, LinearProjClustering
 from coresets import coresets
-from code.utilities import gen_rand_partition, Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost
 
+# Updating results
 def update(results,q,mdict):
-    # global results
     while 1:
         m = q.get()
         if m==[]:
@@ -24,33 +23,33 @@ def update(results,q,mdict):
         results[k].result[algo][k][cor_num][init]["num_iters"] += 1
         results[k].result[algo][k][cor_num][init]["running_time"] += runtime
 
-
+# Processing each Input
 def process(args,q):
     k,cor_num,init,algos,coreset,d,ell,z,centers = args
     try:
-        new_centers, cpcost, runtime = run(coreset,centers,k,d,ell,z)
+        new_centers, cpcost, runtime = run(coreset,k,d,ell,z,centers)
     except ValueError as e:
-        print("ALGO: Failed: k="+str(k))
+        print("ALGO: Failed: k="+str(k),"init="+str(init))
         print(e)
         sys.stdout.flush()
         return
     except ArithmeticError as e:
-        print("ALGO: Failed: k="+str(k))
+        print("ALGO: Failed: k="+str(k),"init="+str(init))
         print(e)
         sys.stdout.flush()
         return
     for algo in algos:
         q.put([algo,k,cor_num,init,new_centers,runtime])
 
-
-def solve_clustering(dataset,name,k_vals,z,iter,is_PCA=0):
-   
+# Main Function
+def solve_clustering(dataset,name,k_vals,z,iter):
     results = {}
     for k in k_vals:
         f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
         results[k] = pickle.load(f)
         f.close()
     
+    # Multiprocessing Part
     manager = mp.Manager()
     mdict = manager.dict()
     q = manager.Queue()
@@ -65,26 +64,27 @@ def solve_clustering(dataset,name,k_vals,z,iter,is_PCA=0):
         for cor_num in results[k].result[algos[0]][k]:
             coreset = results[k].coresets[k][cor_num]
             for init in results[k].result[algos[0]][k][cor_num]:
-                if results[k].result[algos[0]][k][cor_num][init]["num_iters"]==iter-1:              
-                    # Step 2: Fair-Lloyd's Algorithm
+                if results[k].result[algos[0]][k][cor_num][init]["num_iters"]==iter-1:
                     centers = results[k].result[algos[0]][k][cor_num][init]["centers"]
-                    job = pool.apply_async(process,([k,cor_num,init,algos,coreset,d,ell,z,centers],q)) 
+                    job = pool.apply_async(process,([k,cor_num,init,algos,coreset,d,ell,z,centers],q))
                     jobs.append(job)
     for job in jobs:
         job.get()
-
     q.put([])
     watcher.get()
     results = mdict['output']
     pool.close()
     pool.join()
 
-
     for k in k_vals:
         f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
         pickle.dump(results[k],f)
         f.close()
 
+
+
+
+# Projective Clustering
 def solve_projective_linear(data,svar,groups,k,J,z,num_iters):
     ell = len(groups)
     # Step 1: Compute Coreset

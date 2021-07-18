@@ -5,14 +5,7 @@ class Point:
         self.cx = np.asarray(coordinates)
         self.group = group
         self.weight = weight
-        self.center = center
         self.cluster = cluster
-        self.dist = np.inf
-
-    def reset(self):
-        self.dist = np.inf
-        self.center = None
-        self.cluster = None
 
 class Center:
     def __init__(self,coordinates,cluster=None):
@@ -26,9 +19,6 @@ class Center:
         point.cluster = self.cluster
 
     def distance(self,point):
-        return np.linalg.norm(self.cx-point.cx)
-
-    def distance_(self,point):
         return np.linalg.norm(self.cx-point)
 
 

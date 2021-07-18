@@ -1,17 +1,6 @@
-import pylab
-from cvxopt import solvers, matrix, spmatrix, mul, div
+from cvxopt import solvers, matrix
 import cvxpy as cp
 import numpy as np
-
-import time
-import warnings
-import matplotlib.pyplot as plt
-
-from sklearn import cluster, datasets, mixture
-from sklearn.neighbors import kneighbors_graph
-from sklearn.preprocessing import StandardScaler
-
-
 
 def kzclustering(data, k, d, ell, q):
 

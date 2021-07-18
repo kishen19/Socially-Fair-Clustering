@@ -1,4 +1,5 @@
-from code.classes import Point, Center, Subspace, Affine
+from utils.classes import Center, Subspace
+from utils import cluster_assign
 from code.convex_opt import kzclustering,linearprojclustering
 import numpy as np
 import heapq
@@ -6,27 +7,13 @@ from random import choice
 import time
 
 def reassign(data,centers):
-    for x in data:
-        x.reset()
-        for center in centers:
-            new_dist = center.distance(x)
-            if new_dist < x.dist:
-                if x.center:
-                    x.center.size-=1
-                center.size+=1
-                x.center = center
-                x.cluster = center.cluster
-                x.dist = new_dist
+    assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.ones(len(data)),np.asarray([c.cx for c in centers]))
+    for i,x in enumerate(data):
+        x.cluster = assign[i]
 
-def run(data,centers,k,d,ell,z):
-    reassign(data,centers)
-    _st = time.time()
-    new_centers,cost = kzclustering(data,k,d,ell,z) # Call Convex Program
-    _ed = time.time()
-    new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
-    return new_centers, cost, _ed-_st
-
-def run_final(data,k,d,ell,z):
+def run(data,k,d,ell,z,centers=None):
+    if centers != None:
+        reassign(data,centers)
     _st = time.time()
     new_centers,cost = kzclustering(data,k,d,ell,z) # Call Convex Program
     _ed = time.time()
@@ -58,19 +45,6 @@ class Base:
                     x.center = center
                     x.cluster = center.cluster
                     x.dist = new_dist
-
-
-class KZClustering(Base):
-    def __init__(self,data,num_groups,k,z):
-        super().__init__(data,num_groups,k,z)
-
-    def run(self):
-        _st = time.time()
-        new_centers,cost = kzclustering(self.data,self.k,self.d,self.ell,self.z) # Call Convex Program
-        _ed = time.time()
-        new_centers = [Center(c,i) for i,c in enumerate(new_centers)]
-        self.reassign(new_centers)
-        return new_centers, cost, _ed-_st
 
 
 class LinearProjClustering(Base):

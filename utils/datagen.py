@@ -1,6 +1,6 @@
 import pandas as pd
 from sklearn.decomposition import PCA
-from code.preprocess import normalize_data
+from utils.utilities import normalize_data
 
 def dataNgen(dataset):
     data = pd.read_csv("./data/" + dataset + "/" + dataset + ".csv",index_col = 0)

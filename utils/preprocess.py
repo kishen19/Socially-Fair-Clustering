@@ -1,13 +1,5 @@
 import pandas as pd
-
-def normalize_data(data):
-    flags = [False]*data.shape[1]
-    for i in range(data.shape[1]):
-        data.iloc[:,i] = data.iloc[:,i] - data.iloc[:,i].mean()
-        if data.iloc[:,i].std()!=0:
-            data.iloc[:,i] = data.iloc[:,i]/data.iloc[:,i].std()
-            flags[i] = True
-    return data.loc[:,flags]
+from utils.utilities import normalize_data
 
 def credit_preprocess():
     data = pd.read_csv("./data/credit.csv",index_col = 0)

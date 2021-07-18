@@ -4,8 +4,7 @@ import numpy as np
 from tqdm import tqdm
 import pickle
 
-from code.utilities import Socially_Fair_Clustering_Cost
-from code.classes import Center
+from utils.classes import Center
 
 def lloyd(dataset,name,data,svar,groups,k,z,num_iters):
     f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")

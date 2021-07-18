@@ -1,8 +1,8 @@
-from code.classes import Point, Center, Dataset
-from code import datagen
-from code.utilities import gen_rand_centers,plot
+from utils.classes import Point, Center, Dataset
+from utils.datagen import dataNgen, dataPgen
+from utils.utilities import gen_rand_centers,plot
 from code.solve import solve_clustering
-from code.lloyd import lloyd
+from lloyd.lloyd import lloyd
 from coresets import coresets
 
 import pickle
@@ -90,12 +90,12 @@ def init_dataset(dataset,name,num_inits,coreset_sizes,k,isPCA=False):
     f.close()
 
 def main():
-    dataset = "adult"
-    datagen.dataNgen(dataset)
+    dataset = "credit"
+    dataNgen(dataset)
     isPCA = False
     if isPCA:
         for k in range(4,17,2):
-            datagen.dataPgen(dataset,k)
+            dataPgen(dataset,k)
 
     namesuf="_wPCA" if isPCA else "_woPCA"
     name = dataset + namesuf    

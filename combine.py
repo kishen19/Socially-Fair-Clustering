@@ -3,10 +3,10 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 
-from code.algo import run_final
-from code.utilities import plot
-from code.classes import Dataset, Point, Center
-from code.utilities import Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost
+from code.algo import run
+from utils import cluster_assign
+from utils.utilities import Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost, plot
+from utils.classes import Dataset, Point, Center
 
 def compute_centers_lloyd(data,k,d):
     centers = np.zeros((k,d))
@@ -38,17 +38,13 @@ def processPCA(args,q):
     k,cor_num,init,alg,n,d,ell,z,centers,data,svar,groups,dataP = args
     svar=np.asarray(svar)
     X = [Point(data.iloc[i,:],int(svar[i])) for i in range(n)]
+    assign = cluster_assign(np.asarray(dataP),np.ones(n),np.asarray([c.cx for c in centers]))
     for i in range(n):
-        best = np.inf
-        for center in centers:
-            new_dist = center.distance_(dataP.iloc[i,:])
-            if new_dist < best:
-                X[i].cluster = center.cluster
-                best = new_dist
+        X[i].cluster = assign[i]
     if alg=="Lloyd":
         new_centers = compute_centers_lloyd(X,k,d)
     else:
-        new_centers,cpcost,runtime = run_final(X,k,d,ell,z)
+        new_centers,cpcost,runtime = run(X,k,d,ell,z)
     costs = Socially_Fair_Clustering_Cost(data,svar,groups,new_centers,z)
     for group in groups:
         q.put([alg+" (" + groups[group] + ")",k,cor_num,init,costs[group],0])

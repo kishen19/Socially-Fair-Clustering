@@ -2,6 +2,9 @@ from __future__ import print_function, absolute_import, division
 import abc
 import numpy as np
 from sklearn.utils import check_array, check_random_state
+from collections import Counter
+
+from utils import cluster_assign
 
 
 class Coreset(object):
@@ -20,12 +23,16 @@ class Coreset(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, X, w=None, random_state=None):
+    def __init__(self, X, n_clusters, w=None, random_state=None,method="FL11"):
         X = check_array(X, accept_sparse="csr", order='C',dtype=[np.float64, np.float32])
         self.X = X
         self.w = w if w is not None else np.ones(X.shape[0])
+        self.n_clusters = n_clusters
         self.n_samples = X.shape[0]
         self.random_state = check_random_state(random_state)
+        self.method = method
+        self.centers = []
+        self.eps = 0.1
         self.calc_sampling_distribution()
 
     @abc.abstractmethod
@@ -45,5 +52,20 @@ class Coreset(object):
             The size of the coreset to generate.
 
         """
-        ind = np.random.choice(self.n_samples, size=size, p=self.p)
-        return self.X[ind], 1. / (size * self.p[ind])
+        if self.method == "FL11":
+            assign = cluster_assign.cluster_assign(self.X, self.w, self.centers)
+            cnt = Counter(assign)
+            while True:
+                ind = np.random.choice(self.n_samples, size=size-self.n_clusters, p=self.p, replace=False)
+                weights = 1. / ((size-self.n_clusters) * self.p[ind])
+                wts = np.asarray([(1+10*self.eps)*cnt[i] for i in range(self.n_clusters)])
+                for i in range(size-self.n_clusters):
+                    wts[assign[ind[i]]] -= weights[i]
+                if np.all(wts>=0):
+                    print("Success")
+                    return np.append(self.X[ind],np.asarray(self.centers),axis=0), np.append(weights,wts)
+                else:
+                    print("Fail")
+        else:
+            ind = np.random.choice(self.n_samples, size=size, p=self.p, replace=False)
+            return self.X[ind], 1. / (size * self.p[ind])

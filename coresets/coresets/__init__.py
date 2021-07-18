@@ -3,4 +3,4 @@ from __future__ import division, absolute_import
 from coresets.coresets.coreset import Coreset
 from coresets.coresets.k_means_coreset import KMeansCoreset
 from coresets.coresets.projective_clustering_coreset import ProjectiveClusteringCoreset
-from coresets.coresets.sensitivity import kmeans_sensitivity
+from coresets.coresets.sensitivity import BLK17_sensitivity, FL11_sensitivity
