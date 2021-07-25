@@ -40,19 +40,19 @@ def init_dataset(dataset,attr,name,num_inits,coreset_sizes,k,isPCA=False):
     flag = "P_k="+str(k) if isPCA else "N"
     dataN,svarN,groupsN = get_data(dataset,attr,"N")
     data,svar,groups = get_data(dataset,attr,flag)
-    print("Generating Initial Centers")
+    print("k="+str(k)+": Generating Initial Centers")
     for init in range(num_inits):
         mask = gen_rand_centers(data.shape[0],k)
         centers = [Center(data.iloc[mask[i],:],i) for i in range(k)]
         init_centers.append(centers)
     resultsk = Dataset(name+"_k="+str(k),dataN,svarN,groupsN)
-    print("Done: Generating Initial Centers")
+    print("k="+str(k)+": Done: Generating Initial Centers")
 
     n = data.shape[0]
     ell = len(groups)
     if isPCA:
         resultsk.add_PCA_data(data)
-    print("Generating Coresets")
+    print("k="+str(k)+": Generating Coresets")
     for coreset_size in coreset_sizes:
         coreset = []
         rem = coreset_size
@@ -68,7 +68,7 @@ def init_dataset(dataset,attr,name,num_inits,coreset_sizes,k,isPCA=False):
             _coreset_time += (_ed - _st)
             coreset += [Point(coreset_group[i],group,weights[i]) for i in range(coreset_group_size)]
         resultsk.add_coreset(k,coreset)
-    print("Done: Generating Coresets")
+    print("k="+str(k)+": Done: Generating Coresets")
 
     for init in range(num_inits):
         for group in groups:

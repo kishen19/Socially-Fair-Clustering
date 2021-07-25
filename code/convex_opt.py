@@ -23,12 +23,20 @@ def kzclustering(data, k, d, ell, q):
     # ~~~ in matrix form to run cvxopt solver ~~~
     # the coefficients are 0 for all the coordinates of all the centers,
     # and 1 for t.
-    c = matrix(k*d*[0.0] + [1.0]) 
+    c = matrix(k*d*[0.0] + [1.0])
     # in this case, n = k*d+1, i.e., we treat x as a vector of size k*d+1.
+    wts = [[0 for i in range(k)] for j in range(ell)]
+    group_costs = [0]*ell
+    for p in data:
+        group_costs[p.group]+= p.weight*(np.linalg.norm(p.cx)**q)
+        wts[p.group][p.cluster] += p.weight
 
+    for j in range(ell):
+        group_costs[j] /= sum(wts[j])
+    val = max(group_costs)
     def F(x=None, z=None):
         if x is None:  
-            return ell, matrix(0.0, (k*d+1, 1)) # consider changing this x0
+            return ell, matrix(k*d*[0.0] + [val]) # consider changing this x0
         # note that anything is in the domain of f.
 
         # converting matrix x of shape k*d+1 to numpy array x_np of shape (k,d) ignoring the last element of x
@@ -38,10 +46,9 @@ def kzclustering(data, k, d, ell, q):
         # using p for points to avoid confusion with x, the variables.
         # here f is ell dimensional
         f = matrix(0.0, (ell, 1))
-        wts = [[0 for i in range(k)] for j in range(ell)]
+        
         for p in data:
-            f[p.group] += p.weight*np.linalg.norm(x_np[p.cluster] - p.cx)**q
-            wts[p.group][p.cluster] += p.weight
+            f[p.group] += p.weight*np.linalg.norm(x_np[p.cluster] - p.cx)**q 
 
         for j in range(ell):
             f[j] /= sum(wts[j])
@@ -52,7 +59,10 @@ def kzclustering(data, k, d, ell, q):
 
         for p in data:
             S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
-            Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
+            if q==2:
+                Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(x_np[p.cluster] - p.cx)
+            else:
+                Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
         
         for j in range(ell):
             Df[j,:] /= sum(wts[j])
@@ -66,8 +76,11 @@ def kzclustering(data, k, d, ell, q):
         H_groups = [matrix(0.0, (k*d+1, k*d+1)) for i in range(ell)]
         for p in data:
             S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
-            H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
-            H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(q-2)*(p.weight/sum(wts[p.group]))*(S_p**(q/2-2))*np.matmul(np.transpose(np.asarray([x_np[p.cluster] - p.cx])),np.asarray([x_np[p.cluster] - p.cx]))
+            if q==2:
+                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*np.eye(d)
+            else:
+                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
+                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(q-2)*(p.weight/sum(wts[p.group]))*(S_p**(q/2-2))*np.matmul(np.transpose(np.asarray([x_np[p.cluster] - p.cx])),np.asarray([x_np[p.cluster] - p.cx]))
 
         H = matrix(0.0, (k*d+1, k*d+1))
         for j in range(ell):
