@@ -6,7 +6,7 @@ import sys
 
 from code.algo import run
 from utils import cluster_assign
-from utils.utilities import Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost, plot
+from utils.utilities import Socially_Fair_Clustering_Cost, wSocially_Fair_Clustering_Cost, plot, plot_ratios
 from utils.classes import Dataset, Point, Center
 
 def compute_centers_lloyd(data,k,d):
@@ -83,10 +83,11 @@ def compute_costs(results,z):
     return results        
 
 def main():
-    dataset="credit"
-    isPCA = True
+    dataset="adult"
+    attr = "RACE"
+    isPCA = False
     namesuf= "_wPCA" if isPCA else "_woPCA"
-    name = dataset + namesuf
+    name = dataset+"_"+attr+namesuf
     k_vals = range(4,17,2)
     results = Dataset(name,np.random.randint(0,100,(10,10)),np.random.randint(0,100,10),{})
     for k in tqdm(k_vals):
@@ -120,7 +121,10 @@ def main():
     
     plot([results,results], 'cost')
     plot([results,results], 'running_time')
-    plot([results,results], 'coreset_cost') 
+    plot([results,results], 'coreset_cost')
+    plot_ratios([results,results], 'cost_ratio')
+    plot_ratios([results,results], 'coreset_cost_ratio')
+
 
 if __name__=="__main__":
     main()

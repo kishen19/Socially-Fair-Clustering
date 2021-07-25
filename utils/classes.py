@@ -122,6 +122,21 @@ class Dataset:
                         if max(cost) > max([self.result[algo][k][cor_num][init][val] for algo in algos]):
                             cost = [self.result[algo][k][cor_num][init][val] for algo in algos]
                 vals.append(cost[w])
+        elif val=="cost_ratio" or val=="coreset_cost_ratio":
+            algos = sorted([algo for algo in self.result if algo[:5]==algorithm[:5]])
+            algorithm = algos[0]
+            vals = []
+            for k in self.result[algorithm]:
+                best = np.inf
+                for cor_num in self.result[algorithm][k]:
+                    for init in self.result[algorithm][k][cor_num]:
+                        max_ratio = 0
+                        for algo in algos:
+                            for algo1 in algos:
+                                if algo!=algo1:
+                                    max_ratio = max(max_ratio,self.result[algo][k][cor_num][init][val[:-6]]/self.result[algo1][k][cor_num][init][val[:-6]])
+                        best = min(best,max_ratio)
+                vals.append(best)
         else:
             print("Error")
             exit(1)

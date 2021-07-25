@@ -82,3 +82,33 @@ def plot(results, y):
             axs[i].set_ylabel(y)
         
     plt.savefig("./plots/"+dataset.name+'_fig_sociallyFairClustering_'+y+'.png')
+
+def plot_ratios(results, y):
+    '''
+    results: list of Dataset objects; list
+    y: y-axis label; str
+    '''
+    plt.rcParams["figure.figsize"] = (15,7)
+    fig, axs = plt.subplots(1, len(results))
+    
+    for i, dataset in enumerate(results):
+        algorithms = list(set([algo[:5].strip() for algo in dataset.result.keys()]))
+        colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+                                             '#f781bf', '#a65628', '#984ea3',
+                                             '#999999', '#e41a1c', '#dede00']),
+                                      int(len(algorithms) + 1))))
+        markers = np.array(list(islice(cycle(['s', '.', '^',
+                                             '|', 'o', 'x',
+                                             '>', '<', 'p']),
+                                      int(len(algorithms) + 1))))
+        
+        for j, alg in enumerate(algorithms):
+            k, val = dataset.k_vs_val(alg, y)
+            axs[i].plot(k, val, color=colors[j], markersize=10, marker=markers[j], fillstyle='none', label=alg)
+            axs[i].legend(loc='upper right')
+            axs[i].set_xlabel('('+chr(i+97)+')\t\t\t$k$\t\t\t')
+            axs[i].set_title(dataset.name+' dataset')
+        if i==0:
+            axs[i].set_ylabel(y)
+        
+    plt.savefig("./plots/"+dataset.name+'_fig_sociallyFairClustering_'+y+'.png')
