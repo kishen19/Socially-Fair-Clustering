@@ -6,14 +6,13 @@ import pickle
 
 from utils.classes import Center
 
-def lloyd(dataset,name,data,svar,groups,k,z,num_iters):
+def lloyd(dataset,name,k,z,num_iters):
     f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
     results = pickle.load(f)
     f.close()
-    n,d = data.shape
-    ell = len(groups)
+    n,d,ell = results.get_params()
     algos = [algo for algo in results.result if algo[:5]=="Lloyd"]
-    X = np.asarray(data)
+    X = np.asarray(results.get_data())
     for init in results.result[algos[0]][k][0]:
         if results.result[algos[0]][k][0][init]["num_iters"] < num_iters:
             centers = np.asarray([x.cx for x in results.result[algos[0]][k][0][init]["centers"]])

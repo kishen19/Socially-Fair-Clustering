@@ -74,6 +74,12 @@ class Dataset:
             return self.n, self.PCA_d, self.ell
         else:
             return self.n, self.d, self.ell
+    
+    def get_data(self):
+        if self.isPCA:
+            return self.dataP
+        else:
+            return self.data
 
     def add_coreset(self,k,coreset):
         if k not in self.coresets:

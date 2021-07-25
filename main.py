@@ -1,6 +1,6 @@
 from utils.classes import Point, Center, Dataset
-from utils.datagen import dataNgen, dataPgen
 from utils.utilities import gen_rand_centers,plot
+from utils.preprocess import get_data, dataNgen, dataPgen
 from code.solve import solve_clustering
 from lloyd.lloyd import lloyd
 from coresets import coresets
@@ -13,26 +13,15 @@ import multiprocessing as mp
 import sys
 import time
 
-
-def get_sens(dataset,flag):
-    if dataset=="credit":
-        data = pd.read_csv("./data/" + dataset + "/" + dataset + flag + ".csv",index_col=0)
-        svar,data,groups = data.iloc[:,0],data.iloc[:,1:],{0:"Higher Education",1:"Lower Education"}
-    elif dataset=="adult":
-        data = pd.read_csv("./data/" + dataset + "/" + dataset + flag + ".csv",index_col=0)
-        svar,data,groups = data.iloc[:,0],data.iloc[:,1:],{0:"Female",1:"Male"}
-    return svar,data,groups
-
 def get_result(args):
-    algo,dataset,name,k,num_iters,flag = args
+    algo,dataset,name,k,num_iters = args
     try:
         print(algo + ": Start: k="+str(k))
         sys.stdout.flush()
-        svar,data,groups = get_sens(dataset,flag)
         if algo=="ALGO":
-            solve_clustering(dataset,name,data,svar,groups,k,2,num_iters)
+            solve_clustering(dataset,name,k,2,num_iters)
         else:
-            lloyd(dataset,name,data,svar,groups,k,2,num_iters)
+            lloyd(dataset,name,k,2,num_iters)
     except ValueError as e:
         print(algo + ": Failed: k="+str(k))
         print(e)
@@ -46,17 +35,17 @@ def get_result(args):
     print(algo + ": Done: k="+str(k))
     sys.stdout.flush()
 
-def init_dataset(dataset,name,num_inits,coreset_sizes,k,isPCA=False):
+def init_dataset(dataset,attr,name,num_inits,coreset_sizes,k,isPCA=False):
     init_centers = []
-    svar,data,groups = get_sens(dataset,"N")
+    flag = "P_k="+str(k) if isPCA else "N"
+    dataN,svarN,groupsN = get_data(dataset,attr,"N")
+    data,svar,groups = get_data(dataset,attr,flag)
     for init in range(num_inits):
         mask = gen_rand_centers(data.shape[0],k)
         centers = [Center(data.iloc[mask[i],:],i) for i in range(k)]
         init_centers.append(centers)
-    resultsk = Dataset(name+"_k="+str(k), data,svar,groups)
+    resultsk = Dataset(name+"_k="+str(k),dataN,svarN,groupsN)
 
-    flag = "P_k="+str(k) if isPCA else "N"
-    svar,data,groups = get_sens(dataset,flag)
     n = data.shape[0]
     ell = len(groups)
     if isPCA:
@@ -67,7 +56,7 @@ def init_dataset(dataset,name,num_inits,coreset_sizes,k,isPCA=False):
         _coreset_time = 0
         for ind,group in enumerate(groups):
             data_group = data[np.asarray(svar)==group]
-            coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k)
+            coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k,method="BLK17")
             coreset_group_size = int(data_group.shape[0]*coreset_size/n) if ind<ell-1 else rem
             rem-=coreset_group_size
             _st = time.time()
@@ -90,7 +79,10 @@ def init_dataset(dataset,name,num_inits,coreset_sizes,k,isPCA=False):
     f.close()
 
 def main():
-    dataset = "credit"
+    dataset = "adult"
+    attr = "RACE"
+    # dataset = "adult"
+    # attr = "SEX"
     dataNgen(dataset)
     isPCA = False
     if isPCA:
@@ -98,19 +90,18 @@ def main():
             dataPgen(dataset,k)
 
     namesuf="_wPCA" if isPCA else "_woPCA"
-    name = dataset + namesuf    
+    name = dataset+"_"+attr+namesuf
 
     # Generate Init_centers
     k_vals = range(4,17,2)
     algos = ['Lloyd','ALGO']
     num_inits = 10
     num_iters = 100
-    coreset_sizes = [1000,2000,3000,4000,5000]
+    coreset_sizes = [1000,1000,2000,2000,3000,5000,5000]
     z = 2
 
     for k in k_vals:
-        init_dataset(dataset, name, num_inits, coreset_sizes, k, isPCA)
-    
+        init_dataset(dataset, attr, name, num_inits, coreset_sizes, k, isPCA)
     
 
     for algo in algos:
@@ -118,8 +109,7 @@ def main():
             pool = mp.Pool(mp.cpu_count() + 4)
             jobs = []
             for k in k_vals:
-                flag = "P_K="+str(k) if isPCA else "N"
-                job = pool.apply_async(get_result,([algo,dataset,name,k,num_iters,flag],))
+                job = pool.apply_async(get_result,([algo,dataset,name,k,num_iters],))
                 jobs.append(job)
             
             for job in jobs:

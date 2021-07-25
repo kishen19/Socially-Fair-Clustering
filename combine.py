@@ -2,6 +2,7 @@ import pickle
 import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
+import sys
 
 from code.algo import run
 from utils import cluster_assign
@@ -38,7 +39,7 @@ def processPCA(args,q):
     k,cor_num,init,alg,n,d,ell,z,centers,data,svar,groups,dataP = args
     svar=np.asarray(svar)
     X = [Point(data.iloc[i,:],int(svar[i])) for i in range(n)]
-    assign = cluster_assign(np.asarray(dataP),np.ones(n),np.asarray([c.cx for c in centers]))
+    assign = cluster_assign.cluster_assign(np.asarray(dataP),np.ones(n),np.asarray([c.cx for c in centers]))
     for i in range(n):
         X[i].cluster = assign[i]
     if alg=="Lloyd":
