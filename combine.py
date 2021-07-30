@@ -5,8 +5,9 @@ import multiprocessing as mp
 
 from code.algos import run_algo, run_fair_lloyd, run_lloyd
 from utils import cluster_assign
-from utils.utilities import Socially_Fair_Clustering_Cost, plot, plot_ratios
+from utils.utilities import Socially_Fair_Clustering_Cost, plot
 from utils.classes import Point,Dataset
+from utils.preprocess import get_data
 
 def update(results,q,mdict):
     while 1:
@@ -77,8 +78,10 @@ def main():
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
     algos = ["Lloyd","Fair-Lloyd","ALGO"]
-    k_vals = range(4,5)
-    results = Dataset(name,[Point([1,2],0)],{0:0,1:1},algos)
+    k_vals = range(4,17,2)
+
+    dataN,groupsN = get_data(dataset,attr,"N")
+    results = Dataset(name,dataN,groupsN,algos)
     for k in tqdm(k_vals):
         f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
         resultsk = pickle.load(f)
@@ -110,11 +113,11 @@ def main():
                         print("\t"+group+":",results.result[algo][k][cor_num][init_num]["coreset_cost"][group],end=" ")
                     print()
     
-    # plot([results], 'cost')
-    # plot([results], 'running_time')
-    # plot([results], 'coreset_cost')
-    # plot_ratios([results], 'cost_ratio')
-    # plot_ratios([results], 'coreset_cost_ratio')
+    plot([results], 'cost')
+    plot([results], 'running_time')
+    plot([results], 'coreset_cost')
+    plot([results], 'cost_ratio')
+    plot([results], 'coreset_cost_ratio')
 
 
 if __name__=="__main__":

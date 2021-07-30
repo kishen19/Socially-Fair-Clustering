@@ -105,41 +105,54 @@ class Dataset:
         return self.result[algorithm][k][coreset_num][init_num]['centers']
 
     def k_vs_val(self, algorithm, val):
-        ks = sorted(self.result[algorithm].keys())
+        ks = []
+        output = []
+        index = []
         if val=="running_time":
             vals = []
-            for k in self.result[algorithm]:
+            ks = [sorted(self.result[algorithm].keys())]
+            for k in ks[0]:
                 runtime = []
                 for cor_num in self.result[algorithm][k]:
-                    for init in self.result[algorithm][k][cor_num]:
-                        runtime.append(self.result[algorithm][k][cor_num][init][val])
+                    for init_num in self.result[algorithm][k][cor_num]:
+                        runtime.append(self.result[algorithm][k][cor_num][init_num][val])
                 vals.append(np.mean(runtime))
+            output.append(vals)
+            index.append(algorithm)
         elif val=="cost" or val=="coreset_cost":
-            algos = sorted([algo for algo in self.result if algo[:5]==algorithm[:5]])
-            w = algos.index(algorithm)
-            vals = []
-            for k in self.result[algorithm]:
-                cost = np.asarray([np.inf for algo in algos])
+            groups = sorted(self.groups.values())
+            ks = [sorted(self.result[algorithm].keys()) for group in groups]
+            vals = [[] for group in groups]
+            for k in ks[0]:
+                cost = np.asarray([np.inf for i in range(self.ell)])
                 for cor_num in self.result[algorithm][k]:
-                    for init in self.result[algorithm][k][cor_num]:
-                        if max(cost) > max([self.result[algo][k][cor_num][init][val] for algo in algos]):
-                            cost = [self.result[algo][k][cor_num][init][val] for algo in algos]
-                vals.append(cost[w])
+                    for init_num in self.result[algorithm][k][cor_num]:
+                        cur_cost = [self.result[algorithm][k][cor_num][init_num][val][group] for group in groups]
+                        if max(cost) > max(cur_cost):
+                            cost = cur_cost
+                for i,group in enumerate(groups):
+                    vals[i].append(cost[i])
+            output = vals
+            index = [algorithm+" ("+group+")" for group in groups]
+            
         elif val=="cost_ratio" or val=="coreset_cost_ratio":
-            algos = sorted([algo for algo in self.result if algo[:5]==algorithm[:5]])
+            groups = sorted(self.groups.values())
+            ks = [sorted(self.result[algorithm].keys())]
             vals = []
-            for k in self.result[algorithm]:
+            for k in ks[0]:
                 best = np.inf
                 for cor_num in self.result[algorithm][k]:
-                    for init in self.result[algorithm][k][cor_num]:
+                    for init_num in self.result[algorithm][k][cor_num]:
                         max_ratio = 0
-                        for algo in algos:
-                            for algo1 in algos:
-                                if algo!=algo1:
-                                    max_ratio = max(max_ratio,self.result[algo][k][cor_num][init][val[:-6]]/self.result[algo1][k][cor_num][init][val[:-6]])
+                        for g1 in groups:
+                            for g2 in groups:
+                                if g1!=g2:
+                                    max_ratio = max(max_ratio,self.result[algorithm][k][cor_num][init_num][val[:-6]][g1]/self.result[algorithm][k][cor_num][init_num][val[:-6]][g2])
                         best = min(best,max_ratio)
                 vals.append(best)
+            output.append(vals)
+            index.append(algorithm)
         else:
             print("Error")
             exit(1)
-        return ks, vals
+        return ks, output, index
