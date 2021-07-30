@@ -27,14 +27,14 @@ def update(results,q,mdict):
 
 # Processing each Input
 def process(args,q):
-    algo,k,cor_num,init_num,iter,data,svar,coreset,weights,coreset_svar,d,ell,z,centers = args
+    algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers = args
     try:
         if algo == "ALGO":
-            new_centers, time_taken = run_algo(coreset,coreset_svar,weights,k,d,ell,z,centers)
+            new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers)
         elif algo=="Lloyd":
-            new_centers, time_taken = run_lloyd(data,svar,k,d,ell,z,centers)
+            new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers)
         elif algo=="Fair-Lloyd":
-            new_centers, time_taken = run_fair_lloyd(data,svar,k,d,ell,z,centers)
+            new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers)
         q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
     except ValueError as e:
         print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
@@ -59,24 +59,22 @@ def solve_clustering(dataset,name,k_vals,z,iter):
     manager = mp.Manager()
     mdict = manager.dict()
     q = manager.Queue()
-    pool = mp.Pool(mp.cpu_count())
+    pool = mp.Pool(mp.cpu_count()+4)
     watcher = pool.apply_async(update, (results,q,mdict))
     jobs = []
 
     for k in k_vals:
         if results[k].iters == iter-1:
-            data,svar = results[k].get_data()
+            data = results[k].get_data()
             for algo in results[k].result:
                 print(algo+"> Start: k="+str(k))
                 n,d,ell = results[k].get_params()
                 for cor_num in results[k].result[algo][k]:
                     coreset = results[k].coresets[k][cor_num]["data"]
-                    weights = results[k].coresets[k][cor_num]["weights"]
-                    coreset_svar = results[k].coresets[k][cor_num]["svar"]
                     for init_num in results[k].result[algo][k][cor_num]:
                         if results[k].result[algo][k][cor_num][init_num]["num_iters"] == iter-1:
                             centers = results[k].result[algo][k][cor_num][init_num]["centers"]
-                            job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,svar,coreset,weights,coreset_svar,d,ell,z,centers],q))
+                            job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers],q))
                             jobs.append(job)
     # Closing Multiprocessing Pool
     for job in tqdm(jobs):

@@ -45,14 +45,13 @@ class Affine:
         pass
     
 class Dataset:
-    def __init__(self, name, data, svar, groups, algos):
+    def __init__(self, name, data, groups, algos):
         self.name = name
         self.data = data # Original Data
-        self.svar = svar # Original Svar
         self.groups = groups # Original Groups
 
         # Parameters
-        self.n,self.d = data.shape # no. of points and dimension
+        self.n,self.d = len(data),len(data[0].cx) # no. of points and dimension
         self.ell = len(groups)
         self.isPCA = False
         
@@ -63,7 +62,7 @@ class Dataset:
     def add_PCA_data(self,data):
         self.isPCA = True
         self.dataP = data
-        self.PCA_d = data.shape[1]
+        self.PCA_d = len(data[0].cx)
     
     def get_params(self):
         if self.isPCA:
@@ -71,10 +70,10 @@ class Dataset:
         else:
             return self.n, self.d, self.ell
 
-    def add_coreset(self,k,coreset,weights,svar,ctime):
+    def add_coreset(self,k,coreset,ctime):
         if k not in self.coresets:
             self.coresets[k] = []
-        self.coresets[k].append({"data":coreset,"weights":weights,"svar":svar,"time":ctime})
+        self.coresets[k].append({"data":coreset,"time":ctime})
 
     def add_new_result(self, algorithm, k, coreset_num, init_num, running_time, centers, iters):
         if k not in self.result[algorithm]:
@@ -98,9 +97,9 @@ class Dataset:
 
     def get_data(self):
         if self.isPCA:
-            return self.dataP,self.svar
+            return self.dataP
         else:
-            return self.data,self.svar
+            return self.data
 
     def get_centers(self,algorithm,k,coreset_num,init_num):
         return self.result[algorithm][k][coreset_num][init_num]['centers']

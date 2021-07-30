@@ -16,18 +16,20 @@ def gen_rand_centers(n,k):
 def distance(a,b):
     return np.linalg.norm(np.asarray(a)-np.asarray(b))
 
-def compute_cost(data,weights,centers,z):
-    n = data.shape[0]
-    assign = cluster_assign.cluster_assign(data,centers)
+def compute_cost(data,centers,z):
+    n = len(data)
+    assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.asarray([c.cx for c in centers]))
     cost = 0
+    tot = 0
     for i in range(n):
-        cost += weights[i]*(distance(centers[assign[i]], data[i])**z)
-    return cost/sum(weights)
+        cost += data[i].weight*(distance(centers[assign[i]].cx, data[i].cx)**z)
+        tot += data[i].weight
+    return cost/tot
 
-def Socially_Fair_Clustering_Cost(data,svar,weights,groups,centers,z):
+def Socially_Fair_Clustering_Cost(data,groups,centers,z):
     costs = {}
     for group in groups:
-        group_cost = compute_cost(data[svar==group],weights[svar==group],centers,z)
+        group_cost = compute_cost([x for x in data if x.group == group],centers,z)
         costs[groups[group]] = group_cost
     return costs
 

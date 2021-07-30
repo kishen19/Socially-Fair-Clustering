@@ -3,37 +3,44 @@ import heapq
 from random import choice
 import time
 
-from utils.classes import Subspace
+from utils.classes import Center,Subspace
 from utils import cluster_assign
 from code.convex_prog import kzclustering,linearprojclustering
 from code.fair_lloyd import solve_kmeans_clustering
 
 def reassign(data,centers):
-    assign = cluster_assign.cluster_assign(data,centers)
-    return np.asarray(assign)
+    assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.asarray([c.cx for c in centers]))
+    for i,p in enumerate(data):
+        p.cluster = assign[i]
 
 #-----------------------------------------------------#
 # Our ALGO
 
-def run_algo(data,svar,weights,k,d,ell,z,centers=None,clustering=None):
+def run_algo(data,k,d,ell,z,centers=None):
     if centers is not None:
-        clustering = reassign(data,centers)
+        reassign(data,centers)
     _st = time.time()
-    new_centers,cost_ = kzclustering(data,svar,weights,clustering,k,d,ell,z) # Call Convex Program
+    new_centers,cost_ = kzclustering(data,k,d,ell,z) # Call Convex Program
     _ed = time.time()
-    return np.asarray(new_centers), _ed-_st
+    new_centers = [Center(new_centers[i],i) for i in range(k)]
+    return new_centers, _ed-_st
 
 #-----------------------------------------------------#
 # Lloyd's Algorithm
 
-def run_lloyd(data,svar,k,d,ell,z,centers=None,clustering=None):
+def run_lloyd(data,k,d,ell,z,centers=None):
     if centers is not None:
-        clustering = reassign(data,centers)
+        reassign(data,centers)
     new_centers = np.zeros((k,d))
+    num = np.zeros(k)
     _st = time.time()
+    for p in data:
+        new_centers[p.cluster] += p.cx
+        num[p.cluster] += 1
     for i in range(k):
-        new_centers[i] = np.mean(data[clustering==i],axis=0)
+        new_centers[i] = 0 if num[i] ==0 else new_centers[i]/num[i]
     _ed = time.time()
+    new_centers = [Center(new_centers[i],i) for i in range(k)]
     return new_centers, _ed-_st
 
 #----------------------------------------------------#
@@ -41,12 +48,13 @@ def run_lloyd(data,svar,k,d,ell,z,centers=None,clustering=None):
 # Reference: Mehrdad Ghadiri, Samira Samadi, and Santosh Vempala. 2021. Socially Fair k-Means Clustering. 
 #            In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency (FAccT '21).
 
-def run_fair_lloyd(data,svar,k,d,ell,z,centers=None,clustering=None):
+def run_fair_lloyd(data,k,d,ell,z,centers=None):
     if centers is not None:
-        clustering = reassign(data,centers)
+        reassign(data,centers)
     _st = time.time()
-    new_centers,cost = solve_kmeans_clustering(data,svar,clustering,k,d,ell,z) # Call Convex Program
+    new_centers,cost = solve_kmeans_clustering(data,k,d,ell,z) # Call Convex Program
     _ed = time.time()
+    new_centers = [Center(new_centers[i],i) for i in range(k)]
     return new_centers, _ed-_st
 
 

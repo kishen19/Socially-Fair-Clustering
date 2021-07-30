@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import time
 
-from utils.classes import Dataset
+from utils.classes import Point, Center, Dataset
 from utils.utilities import gen_rand_centers
 from utils.preprocess import get_data, dataNgen, dataPgen
 from code.solve import solve_clustering
@@ -14,42 +14,38 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
     init_centers = []
     flag = "P_k="+str(k) if isPCA else "N"
     
-    dataN,svarN,groupsN = get_data(dataset,attr,"N") # Read original data
-    data,svar,groups = get_data(dataset,attr,flag) # Read required data
+    dataN,groupsN = get_data(dataset,attr,"N") # Read original data
+    data,groups = get_data(dataset,attr,flag) # Read required data
     n = len(data)
     ell = len(groups)
 
     print("k="+str(k)+": Generating Initial Centers")
     for init_num in range(num_inits):
         mask = gen_rand_centers(n,k)
-        centers = np.asarray([data[mask[i],:] for i in range(k)])
+        centers = [Center(data[mask[i]].cx,i) for i in range(k)]
         init_centers.append(centers)
     print("k="+str(k)+": Done: Generating Initial Centers")
 
-    resultsk = Dataset(name+"_k="+str(k),dataN,svarN,groupsN,algos)
+    resultsk = Dataset(name+"_k="+str(k),dataN,groupsN,algos)
     if isPCA:
         resultsk.add_PCA_data(data)
     
     print("k="+str(k)+": Generating Coresets")
     for coreset_size in coreset_sizes:
         coreset = []
-        weights = []
-        coreset_svar = []
         rem = coreset_size
         _coreset_time = 0
         for ind,group in enumerate(groups):
-            data_group = data[svar==group]
+            data_group = [x.cx for x in data if x.group == group]
             coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k,method="BLK17")
-            coreset_group_size = int(data_group.shape[0]*coreset_size/n) if ind<ell-1 else rem
+            coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
             rem-=coreset_group_size
             _st = time.time()
             coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
             _ed = time.time()
             _coreset_time += (_ed - _st)
-            coreset += list(coreset_group)
-            weights += list(weights_group)
-            coreset_svar += [group]*coreset_group_size
-        resultsk.add_coreset(k,np.asarray(coreset),np.asarray(weights),np.asarray(coreset_svar),_coreset_time)
+            coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
+        resultsk.add_coreset(k,np.asarray(coreset),_coreset_time)
     print("k="+str(k)+": Done: Generating Coresets")
 
     for algo in algos:

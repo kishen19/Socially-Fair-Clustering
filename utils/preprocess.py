@@ -2,6 +2,8 @@ import pandas as pd
 import numpy as np
 from sklearn.decomposition import PCA
 
+from utils.classes import Point
+
 def normalize_data(data):
     flags = [False]*data.shape[1]
     for i in range(data.shape[1]):
@@ -55,7 +57,8 @@ def get_data(dataset, attr, flag):
         svar, groups = adult_preprocess(sens,attr)
     elif dataset=="LFW":
         svar, groups = LFW_preprocess(sens,attr)
-    return data,svar,groups
+    data = [Point(data[i],svar[i]) for i in range(data.shape[0])]
+    return data,groups
 
 def dataNgen(dataset):
     data = pd.read_csv("./data/" + dataset + "/" + dataset + ".csv",index_col = 0)
