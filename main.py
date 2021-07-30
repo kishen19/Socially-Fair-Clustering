@@ -62,26 +62,25 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
     f.close()
 
 def main():
-    # dataset = "adult"
-    # attr = "RACE"
-    dataset = "credit"
-    attr = "EDUCATION"
-    dataNgen(dataset)
+    # Parameters:
+    dataset = "credit" # "adult"
+    attr = "EDUCATION" # "RACE" or "SEX"
+    k_vals = range(4,17,2)
+    algos = ['Lloyd','Fair-Lloyd','ALGO']
+    num_inits = 10
+    num_iters = 10
+    coreset_sizes = [1000,2000,3000,4000,5000]
+    z = 2
     isPCA = False
+    
+    # Preprocessing datasets
+    dataNgen(dataset)
     if isPCA:
-        for k in range(4,17,2):
+        for k in k_vals:
             dataPgen(dataset,k)
 
     namesuf="_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
-
-    # Generate Init_centers
-    k_vals = range(4,5)
-    algos = ['Lloyd','Fair-Lloyd','ALGO']
-    num_inits = 1
-    num_iters = 5
-    coreset_sizes = [1000]#[1000,2000,3000,4000,5000]
-    z = 2
 
     # Initialization
     for k in k_vals:
