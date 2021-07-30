@@ -1,8 +1,9 @@
 from random import randint, sample, shuffle
 import numpy as np
-from utils import cluster_assign
 from matplotlib import pyplot as plt
 from itertools import cycle, islice
+
+from utils import cluster_assign
 
 def gen_rand_partition(n,k):
     return [randint(0,k-1) for i in range(n)]
@@ -12,45 +13,22 @@ def gen_rand_centers(n,k):
     shuffle(init)
     return init
 
-def normalize_data(data):
-    flags = [False]*data.shape[1]
-    for i in range(data.shape[1]):
-        data.iloc[:,i] = data.iloc[:,i] - data.iloc[:,i].mean()
-        if data.iloc[:,i].std()!=0:
-            data.iloc[:,i] = data.iloc[:,i]/data.iloc[:,i].std()
-            flags[i] = True
-    return data.loc[:,flags]
+def distance(a,b):
+    return np.linalg.norm(np.asarray(a)-np.asarray(b))
 
-def compute_cost(data,centers,z):
+def compute_cost(data,weights,centers,z):
     n = data.shape[0]
-    assign = cluster_assign.cluster_assign(np.asarray(data),np.ones(n),np.asarray([c.cx for c in centers]))
+    assign = cluster_assign.cluster_assign(data,centers)
     cost = 0
     for i in range(n):
-        cost += (centers[assign[i]].distance(data.iloc[i])**z)
-    return cost/n
+        cost += weights[i]*(distance(centers[assign[i]], data[i])**z)
+    return cost/sum(weights)
 
-def Socially_Fair_Clustering_Cost(data,svar,groups,centers,z):
+def Socially_Fair_Clustering_Cost(data,svar,weights,groups,centers,z):
     costs = {}
     for group in groups:
-        data_group = data[np.asarray(svar)==group]
-        group_cost = compute_cost(data_group,centers,z)
-        costs[group] = group_cost
-    return costs
-
-def compute_wcost(data,centers,z):
-    n = len(data)
-    assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.ones(n),np.asarray([c.cx for c in centers]))
-    cost = 0
-    for i in range(n):
-        cost += (centers[assign[i]].distance(data[i].cx)**z)
-    return cost/sum([p.weight for p in data])
-
-def wSocially_Fair_Clustering_Cost(data,groups,centers,z):
-    costs = {}
-    for group in groups:
-        data_group = [x for x in data if x.group==group]
-        group_cost = compute_wcost(data_group,centers,z)
-        costs[group] = group_cost
+        group_cost = compute_cost(data[svar==group],weights[svar==group],centers,z)
+        costs[groups[group]] = group_cost
     return costs
 
 def plot(results, y):
@@ -58,9 +36,10 @@ def plot(results, y):
     results: list of Dataset objects; list
     y: y-axis label; str
     '''
-    plt.rcParams["figure.figsize"] = (15,7)
+    plt.rcParams["figure.figsize"] = (7,7)
     fig, axs = plt.subplots(1, len(results))
-    
+    if len(results)==1:
+        axs = [axs]
     for i, dataset in enumerate(results):
         algorithms = dataset.result.keys()
         colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
@@ -88,11 +67,12 @@ def plot_ratios(results, y):
     results: list of Dataset objects; list
     y: y-axis label; str
     '''
-    plt.rcParams["figure.figsize"] = (15,7)
+    plt.rcParams["figure.figsize"] = (7,7)
     fig, axs = plt.subplots(1, len(results))
-    
+    if len(results)==1:
+        axs = [axs]
     for i, dataset in enumerate(results):
-        algorithms = list(set([algo[:5].strip() for algo in dataset.result.keys()]))
+        algorithms = [[algo for algo in dataset.result if algo[:4]=="ALGO"][0]]+[[algo for algo in dataset.result if algo[:5]=="Lloyd"][0]]
         colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
                                              '#f781bf', '#a65628', '#984ea3',
                                              '#999999', '#e41a1c', '#dede00']),
@@ -104,7 +84,8 @@ def plot_ratios(results, y):
         
         for j, alg in enumerate(algorithms):
             k, val = dataset.k_vs_val(alg, y)
-            axs[i].plot(k, val, color=colors[j], markersize=10, marker=markers[j], fillstyle='none', label=alg)
+            axs[i].plot(k, val, color=colors[j], markersize=10, marker=markers[j], fillstyle='none', label=alg[:5])
+            axs[i].set_ylim(ymin=1,ymax=max(val)+1)
             axs[i].legend(loc='upper right')
             axs[i].set_xlabel('('+chr(i+97)+')\t\t\t$k$\t\t\t')
             axs[i].set_title(dataset.name+' dataset')

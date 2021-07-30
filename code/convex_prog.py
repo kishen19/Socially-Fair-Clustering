@@ -2,7 +2,7 @@ from cvxopt import solvers, matrix
 import cvxpy as cp
 import numpy as np
 
-def kzclustering(data, k, d, ell, q):
+def kzclustering(data, svar, weights, clustering, k, d, ell, q):
 
     # ~~~ parameters ~~~
     # k:    the number of clusters; python float
@@ -25,15 +25,16 @@ def kzclustering(data, k, d, ell, q):
     # and 1 for t.
     c = matrix(k*d*[0.0] + [1.0])
     # in this case, n = k*d+1, i.e., we treat x as a vector of size k*d+1.
-    wts = [[0 for i in range(k)] for j in range(ell)]
-    group_costs = [0]*ell
-    for p in data:
-        group_costs[p.group]+= p.weight*(np.linalg.norm(p.cx)**q)
-        wts[p.group][p.cluster] += p.weight
-
+    wts = np.zeros([ell,k])
+    group_costs = np.zeros(ell)
     for j in range(ell):
-        group_costs[j] /= sum(wts[j])
+        group_costs[j] = np.sum(weights[svar==j]*np.power(np.linalg.norm(data[svar==j],axis=1),q))
+        for i in range(k):
+            wts[j,i] = np.sum(weights[np.logical_and(svar==j,clustering==i)])
+        group_costs[j] /= np.sum(wts[j])
+
     val = max(group_costs)
+    val = 0.0
     def F(x=None, z=None):
         if x is None:  
             return ell, matrix(k*d*[0.0] + [val]) # consider changing this x0
@@ -47,25 +48,30 @@ def kzclustering(data, k, d, ell, q):
         # here f is ell dimensional
         f = matrix(0.0, (ell, 1))
         
-        for p in data:
-            f[p.group] += p.weight*np.linalg.norm(x_np[p.cluster] - p.cx)**q 
-
         for j in range(ell):
-            f[j] /= sum(wts[j])
+            f[j] = np.sum(weights[svar==j]*np.power(np.linalg.norm(data[svar==j]-x_np[j],axis=1),q))/np.sum(wts[j])
             f[j] -= x[-1]
 
         # computing gradients w.r.t. the centers
         Df = matrix(0.0, (ell,k*d+1))
 
-        for p in data:
-            S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
-            if q==2:
-                Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(x_np[p.cluster] - p.cx)
-            else:
-                Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
-        
         for j in range(ell):
-            Df[j,:] /= sum(wts[j])
+            for i in range(k):
+                if q==2:
+                    Df[j,i*d:(i+1)*d] = np.sum((q*weights[np.logical_and(svar==j,clustering==i)]*(data[np.logical_and(svar==j,clustering==i)]-x_np[i]).T).T,axis=0)
+                else:
+                    S_p = np.power(np.linalg.norm(data[np.logical_and(svar==j,clustering==i)]-x_np[i],axis=1), q-2)
+                    Df[j,i*d:(i+1)*d] = np.sum((q*weights[np.logical_and(svar==j,clustering==i)]*S_p*(data[np.logical_and(svar==j,clustering==i)]-x_np[i]).T).T,axis=0)
+            Df[j,:] /= np.sum(wts[j])
+        # for p in data:
+        #     S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
+        #     if q==2:
+        #         Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(x_np[p.cluster] - p.cx)
+        #     else:
+        #         Df[p.group,p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
+        
+        # for j in range(ell):
+        #     Df[j,:] /= sum(wts[j])
 
         Df[:,-1] = -1.0 # gradient w.r.t. the variable t.
 
@@ -74,13 +80,22 @@ def kzclustering(data, k, d, ell, q):
         # H = z_0*Dsr_0 + z_1*Dsr_1 + ... + z_{ell-1}*Dsr_{ell-1}
         
         H_groups = [matrix(0.0, (k*d+1, k*d+1)) for i in range(ell)]
-        for p in data:
-            S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
-            if q==2:
-                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*np.eye(d)
-            else:
-                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
-                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(q-2)*(p.weight/sum(wts[p.group]))*(S_p**(q/2-2))*np.matmul(np.transpose(np.asarray([x_np[p.cluster] - p.cx])),np.asarray([x_np[p.cluster] - p.cx]))
+
+        for j in range(ell):
+            for i in range(k):
+                if q==2:
+                    H_groups[j][i*d:(i+1)*d,i*d:(i+1)*d] = q*(wts[j,i]/np.sum(wts[j]))*np.eye(d)
+                else:
+                    S_p = np.power(np.linalg.norm(data[np.logical_and(svar==j,clustering==i)]-x_np[i],axis=1), q-2)
+                    pass # Pending
+
+        # for p in data:
+        #     S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
+        #     if q==2:
+        #         H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*np.eye(d)
+        #     else:
+        #         H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
+        #         H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(q-2)*(p.weight/sum(wts[p.group]))*(S_p**(q/2-2))*np.matmul(np.transpose(np.asarray([x_np[p.cluster] - p.cx])),np.asarray([x_np[p.cluster] - p.cx]))
 
         H = matrix(0.0, (k*d+1, k*d+1))
         for j in range(ell):

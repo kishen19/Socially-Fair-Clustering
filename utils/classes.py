@@ -1,22 +1,16 @@
 import numpy as np
 
 class Point:
-    def __init__(self,coordinates,group,weight=1,center=None,cluster=None):
+    def __init__(self,coordinates,group,weight=1,cluster=None):
         self.cx = np.asarray(coordinates)
         self.group = group
         self.weight = weight
         self.cluster = cluster
 
 class Center:
-    def __init__(self,coordinates,cluster=None):
+    def __init__(self,coordinates,cluster):
         self.cx= np.asarray(coordinates)
-        self.size = 0
         self.cluster = cluster
-
-    def add_point(self,point):
-        self.size+=1
-        point.center = self
-        point.cluster = self.cluster
 
     def distance(self,point):
         return np.linalg.norm(self.cx-point)
@@ -51,56 +45,66 @@ class Affine:
         pass
     
 class Dataset:
-    def __init__(self, name, data, svar, groups):
+    def __init__(self, name, data, svar, groups, algos):
         self.name = name
-        self.data = data
-        self.n,self.d = data.shape # no. of points
-        self.svar = svar
-        self.groups = groups
+        self.data = data # Original Data
+        self.svar = svar # Original Svar
+        self.groups = groups # Original Groups
+
+        # Parameters
+        self.n,self.d = data.shape # no. of points and dimension
         self.ell = len(groups)
-        self.dataP = [] # For PCA
-        self.coresets = {}
-        self.result = {}
         self.isPCA = False
+        
+        self.iters = 0
+        self.coresets = {}
+        self.result = {algo:{} for algo in algos}
 
     def add_PCA_data(self,data):
         self.isPCA = True
         self.dataP = data
         self.PCA_d = data.shape[1]
-
     
     def get_params(self):
         if self.isPCA:
             return self.n, self.PCA_d, self.ell
         else:
             return self.n, self.d, self.ell
-    
-    def get_data(self):
-        if self.isPCA:
-            return self.dataP
-        else:
-            return self.data
 
-    def add_coreset(self,k,coreset):
+    def add_coreset(self,k,coreset,weights,svar,ctime):
         if k not in self.coresets:
             self.coresets[k] = []
-        self.coresets[k].append(coreset)
+        self.coresets[k].append({"data":coreset,"weights":weights,"svar":svar,"time":ctime})
 
-    def add_new_result(self, algorithm, k, init_num, coreset_num, num_iters, cost, running_time, coreset_cost, coreset_time, centers):
-        if algorithm not in self.result:
-            self.result[algorithm] = {}
+    def add_new_result(self, algorithm, k, coreset_num, init_num, running_time, centers, iters):
         if k not in self.result[algorithm]:
             self.result[algorithm][k] = {}
         if coreset_num not in self.result[algorithm][k]:
             self.result[algorithm][k][coreset_num] = {}
-        self.result[algorithm][k][coreset_num][init_num] = {'cost': cost, 
-                        'running_time': running_time,
-                        'coreset_cost': coreset_cost,
-                        'coreset_time': coreset_time,
-                        'num_iters': num_iters,
-                        'centers':centers}
+        if init_num not in self.result[algorithm][k][coreset_num]:
+            self.result[algorithm][k][coreset_num][init_num] = {}
+        self.result[algorithm][k][coreset_num][init_num] = {
+                                                            'running_time': running_time,
+                                                            'centers': centers,
+                                                            'num_iters':iters,
+                                                            'cost':{},
+                                                            'coreset_cost':{},
+                                                        }
 
-    
+    def add_new_cost(self,algorithm, k,coreset_num, init_num, costs, coreset_costs):
+        for group in costs:
+            self.result[algorithm][k][coreset_num][init_num]["cost"][group] = costs[group]
+            self.result[algorithm][k][coreset_num][init_num]["coreset_cost"][group] = coreset_costs[group]
+
+    def get_data(self):
+        if self.isPCA:
+            return self.dataP,self.svar
+        else:
+            return self.data,self.svar
+
+    def get_centers(self,algorithm,k,coreset_num,init_num):
+        return self.result[algorithm][k][coreset_num][init_num]['centers']
+
     def k_vs_val(self, algorithm, val):
         ks = sorted(self.result[algorithm].keys())
         if val=="running_time":
@@ -124,7 +128,6 @@ class Dataset:
                 vals.append(cost[w])
         elif val=="cost_ratio" or val=="coreset_cost_ratio":
             algos = sorted([algo for algo in self.result if algo[:5]==algorithm[:5]])
-            algorithm = algos[0]
             vals = []
             for k in self.result[algorithm]:
                 best = np.inf

@@ -7,9 +7,13 @@ import sys
 
 from utils.classes import Point
 from utils.utilities import gen_rand_partition
-from code.algo import run, LinearProjClustering
+from code.algos import run_algo, run_lloyd, run_fair_lloyd, LinearProjClustering
 from coresets import coresets
 
+
+#----------------------------------------------------------------------#
+# Multiprocessing target functions
+#----------------------------------------------------------------------#
 # Updating results
 def update(results,q,mdict):
     while 1:
@@ -18,30 +22,32 @@ def update(results,q,mdict):
             mdict['output'] = results
             break
         sys.stdout.flush()
-        algo,k,cor_num,init,new_centers,runtime = m
-        results[k].result[algo][k][cor_num][init]["centers"] = new_centers
-        results[k].result[algo][k][cor_num][init]["num_iters"] += 1
-        results[k].result[algo][k][cor_num][init]["running_time"] += runtime
+        algo,k,cor_num,init_num,iter,new_centers,time_taken = m
+        results[k].add_new_result(algo, k, cor_num, init_num, time_taken, new_centers, iter)
 
 # Processing each Input
 def process(args,q):
-    k,cor_num,init,algos,coreset,d,ell,z,centers = args
+    algo,k,cor_num,init_num,iter,data,svar,coreset,weights,coreset_svar,d,ell,z,centers = args
     try:
-        new_centers, cpcost, runtime = run(coreset,k,d,ell,z,centers)
+        if algo == "ALGO":
+            new_centers, time_taken = run_algo(coreset,coreset_svar,weights,k,d,ell,z,centers)
+        elif algo=="Lloyd":
+            new_centers, time_taken = run_lloyd(data,svar,k,d,ell,z,centers)
+        elif algo=="Fair-Lloyd":
+            new_centers, time_taken = run_fair_lloyd(data,svar,k,d,ell,z,centers)
+        q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
     except ValueError as e:
-        print("ALGO: Failed: k="+str(k),"init="+str(init))
+        print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
-        return
     except ArithmeticError as e:
-        print("ALGO: Failed: k="+str(k),"init="+str(init))
+        print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
-        return
-    for algo in algos:
-        q.put([algo,k,cor_num,init,new_centers,runtime])
 
+#----------------------------------------------------------------------#
 # Main Function
+#----------------------------------------------------------------------#
 def solve_clustering(dataset,name,k_vals,z,iter):
     results = {}
     for k in k_vals:
@@ -53,38 +59,44 @@ def solve_clustering(dataset,name,k_vals,z,iter):
     manager = mp.Manager()
     mdict = manager.dict()
     q = manager.Queue()
-    pool = mp.Pool(mp.cpu_count() + 4)
+    pool = mp.Pool(mp.cpu_count())
     watcher = pool.apply_async(update, (results,q,mdict))
     jobs = []
 
     for k in k_vals:
-        print("ALGO: Start: k="+str(k))
-        n,d,ell = results[k].get_params()
-        algos = [algo for algo in results[k].result if algo[:4]=="ALGO"]
-        for cor_num in results[k].result[algos[0]][k]:
-            coreset = results[k].coresets[k][cor_num]
-            for init in results[k].result[algos[0]][k][cor_num]:
-                if results[k].result[algos[0]][k][cor_num][init]["num_iters"]==iter-1:
-                    centers = results[k].result[algos[0]][k][cor_num][init]["centers"]
-                    job = pool.apply_async(process,([k,cor_num,init,algos,coreset,d,ell,z,centers],q))
-                    jobs.append(job)
-    for job in jobs:
-        job.get()
+        if results[k].iters == iter-1:
+            data,svar = results[k].get_data()
+            for algo in results[k].result:
+                print(algo+"> Start: k="+str(k))
+                n,d,ell = results[k].get_params()
+                for cor_num in results[k].result[algo][k]:
+                    coreset = results[k].coresets[k][cor_num]["data"]
+                    weights = results[k].coresets[k][cor_num]["weights"]
+                    coreset_svar = results[k].coresets[k][cor_num]["svar"]
+                    for init_num in results[k].result[algo][k][cor_num]:
+                        if results[k].result[algo][k][cor_num][init_num]["num_iters"] == iter-1:
+                            centers = results[k].result[algo][k][cor_num][init_num]["centers"]
+                            job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,svar,coreset,weights,coreset_svar,d,ell,z,centers],q))
+                            jobs.append(job)
+    # Closing Multiprocessing Pool
+    for job in tqdm(jobs):
+        job.get()    
     q.put([])
     watcher.get()
     results = mdict['output']
     pool.close()
     pool.join()
-
+    # Dumping Output to Pickle file
     for k in k_vals:
+        results[k].iters = max(results[k].iters, iter)
         f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
         pickle.dump(results[k],f)
         f.close()
 
 
-
-
+#----------------------------------------------------------------------#
 # Projective Clustering
+#----------------------------------------------------------------------#
 def solve_projective_linear(data,svar,groups,k,J,z,num_iters):
     ell = len(groups)
     # Step 1: Compute Coreset

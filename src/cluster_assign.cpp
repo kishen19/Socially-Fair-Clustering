@@ -14,20 +14,13 @@ const char* cluster_assign_doc = R"(cluster_assign)";
 
 } // namespace
 
-py::array_t<int> cluster_assign(const py::array_t<double>& points_,
-    const py::array_t<double>& weights_,
-    const py::array_t<double>& centers_) {
+py::array_t<int> cluster_assign(const py::array_t<double>& points_,const py::array_t<double>& centers_) {
     if (points_.shape(1) != centers_.shape(1)) {
         throw std::runtime_error(
             "Data points and centers should have the save dimension.");
     }
-    if (points_.shape(0) != weights_.shape(0)) {
-        throw std::runtime_error(
-            "The number of points and weights should be the same.");
-    }
     auto points = points_.unchecked<2>();
     auto centers = centers_.unchecked<2>();
-    auto weights = weights_.unchecked<1>();
 
     int n = points.shape(0);
     std::vector<double> dists(n);
