@@ -44,6 +44,18 @@ def process(args,q):
         print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
+    except TypeError as e:
+        print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e)
+        sys.stdout.flush()
+
+    # if algo == "ALGO":
+    #     new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers)
+    # elif algo=="Lloyd":
+    #     new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers)
+    # elif algo=="Fair-Lloyd":
+    #     new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers)
+    # q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
 
 #----------------------------------------------------------------------#
 # Main Function

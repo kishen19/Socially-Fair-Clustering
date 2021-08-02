@@ -26,15 +26,18 @@ def process(args,q):
 
 def processPCA(args,q):
     algo,k,cor_num,init_num,data,groups,dataP,centers,z = args
-    n,d = data.shape[0]
+    n = len(data)
+    d = len(data[0].cx)
     ell = len(groups)
-    assign = cluster_assign.cluster_assign(dataP,centers)
+    assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
+    for i in range(n):
+        data[i].cluster = assign[i]
     if algo == "ALGO":
-        new_centers,time_taken = run_algo(data,k,d,ell,z,clustering=assign)
+        new_centers,time_taken = run_algo(data,k,d,ell,z)
     elif algo == "Lloyd":
-        new_centers,time_taken = run_lloyd(data,k,d,ell,z,clustering=assign)
+        new_centers,time_taken = run_lloyd(data,k,d,ell,z)
     elif algo == "Fair-Lloyd":
-        new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z,clustering=assign)
+        new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z)
     costs = Socially_Fair_Clustering_Cost(data,groups,new_centers,z)
     coreset_costs = {group:0 for group in costs}
     q.put([algo,k,cor_num,init_num,costs,coreset_costs])
@@ -58,7 +61,7 @@ def compute_costs(results,z):
                         centers = results.result[algo][k][cor_num][init_num]["centers"]
                         job = pool.apply_async(process,([algo,k,cor_num,init_num,results.data,results.groups,results.coresets[k][cor_num]["data"],centers,z],q)) 
                         jobs.append(job)
-    for job in jobs:
+    for job in tqdm(jobs):
         job.get()
 
     q.put([])
@@ -74,7 +77,7 @@ def main():
     # attr = "RACE"
     dataset="credit"
     attr = "EDUCATION"
-    isPCA = False
+    isPCA = True
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
     algos = ["Lloyd","Fair-Lloyd","ALGO"]

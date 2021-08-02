@@ -48,10 +48,13 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
         resultsk.add_coreset(k,np.asarray(coreset),_coreset_time)
     print("k="+str(k)+": Done: Generating Coresets")
 
+    for cor_num in range(len(coreset_sizes)):
+        for init_num in range(num_inits):
+            resultsk.add_new_result("ALGO",k,cor_num,init_num,0,init_centers[init_num],0)
     for algo in algos:
-        for cor_num in range(len(coreset_sizes)):
+        if algo != 'ALGO':
             for init_num in range(num_inits):
-                resultsk.add_new_result(algo,k,cor_num,init_num,0,init_centers[init_num],0)
+                resultsk.add_new_result(algo,k,0,init_num,0,init_centers[init_num],0)
 
     f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
     pickle.dump(resultsk,f)
@@ -62,12 +65,12 @@ def main():
     dataset = "credit" # "adult"
     attr = "EDUCATION" # "RACE" or "SEX"
     k_vals = range(4,17,2)
-    algos = ['Lloyd','Fair-Lloyd','ALGO']
-    num_inits = 10
-    num_iters = 10
-    coreset_sizes = [1000,2000,3000,4000,5000]
+    algos = ['ALGO','Lloyd','Fair-Lloyd']
+    num_inits = 20
+    num_iters = 20
+    coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
     z = 2
-    isPCA = False
+    isPCA = True
     
     # Preprocessing datasets
     dataNgen(dataset)
