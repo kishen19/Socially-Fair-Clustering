@@ -30,28 +30,30 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
     if isPCA:
         resultsk.add_PCA_data(data)
     
-    print("k="+str(k)+": Generating Coresets")
-    for coreset_size in coreset_sizes:
-        coreset = []
-        rem = coreset_size
-        _coreset_time = 0
-        for ind,group in enumerate(groups):
-            data_group = [x.cx for x in data if x.group == group]
-            coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k,method="BLK17")
-            coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
-            rem-=coreset_group_size
-            _st = time.time()
-            coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
-            _ed = time.time()
-            _coreset_time += (_ed - _st)
-            coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
-        resultsk.add_coreset(k,np.asarray(coreset),_coreset_time)
-    print("k="+str(k)+": Done: Generating Coresets")
-
+    # For ALGO
     if "ALGO" in algos:
+        print("k="+str(k)+": Generating Coresets")
+        for coreset_size in coreset_sizes:
+            coreset = []
+            rem = coreset_size
+            _coreset_time = 0
+            for ind,group in enumerate(groups):
+                data_group = [x.cx for x in data if x.group == group]
+                coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k,method="BLK17")
+                coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
+                rem-=coreset_group_size
+                _st = time.time()
+                coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
+                _ed = time.time()
+                _coreset_time += (_ed - _st)
+                coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
+            resultsk.add_coreset(k,np.asarray(coreset),_coreset_time)
+        print("k="+str(k)+": Done: Generating Coresets")
+
         for cor_num in range(len(coreset_sizes)):
             for init_num in range(num_inits):
                 resultsk.add_new_result("ALGO",k,cor_num,init_num,0,init_centers[init_num],0)
+    # For other algorithms
     for algo in algos:
         if algo != 'ALGO':
             for init_num in range(num_inits):
@@ -72,6 +74,9 @@ def main():
     coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
     z = 2
     isPCA = False
+    # ALGO2 related parameters
+    n_samples = 5
+    sample_size = 1000
     
     # Preprocessing datasets
     dataNgen(dataset)
@@ -88,7 +93,7 @@ def main():
 
     # Run
     for iter in tqdm(range(1,num_iters+1)):
-        solve_clustering(dataset,name,k_vals,z,iter)
+        solve_clustering(dataset,name,k_vals,z,iter,n_samples,sample_size)
 
 if __name__=='__main__':
     main()

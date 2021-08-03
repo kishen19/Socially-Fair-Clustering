@@ -27,34 +27,34 @@ def update(results,q,mdict):
 
 # Processing each Input
 def process(args,q):
-    algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers = args
+    algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers,n_samples,sample_size = args
     try:
         if algo == "ALGO":
             new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers=centers)
         elif algo == "ALGO2":
-            new_centers, time_taken = run_algo2(data,k,d,ell,z,centers=centers) # Default: n_samples = 5, sample_size = 1000
+            new_centers, time_taken = run_algo2(data,k,d,ell,z,centers=centers,n_samples=n_samples,sample_size=sample_size)
         elif algo=="Lloyd":
             new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers=centers)
         elif algo=="Fair-Lloyd":
             new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers=centers)
         q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
     except ValueError as e:
-        print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
     except ArithmeticError as e:
-        print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
     except TypeError as e:
-        print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
 
 #----------------------------------------------------------------------#
 # Main Function
 #----------------------------------------------------------------------#
-def solve_clustering(dataset,name,k_vals,z,iter):
+def solve_clustering(dataset,name,k_vals,z,iter,n_samples=5,sample_size=1000):
     results = {}
     for k in k_vals:
         f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","rb")
@@ -76,11 +76,14 @@ def solve_clustering(dataset,name,k_vals,z,iter):
                 print(algo+"> Start: k="+str(k))
                 n,d,ell = results[k].get_params()
                 for cor_num in results[k].result[algo][k]:
-                    coreset = results[k].coresets[k][cor_num]["data"]
+                    if algo == "ALGO":
+                        coreset = results[k].coresets[k][cor_num]["data"]
+                    else:
+                        coreset = []
                     for init_num in results[k].result[algo][k][cor_num]:
                         if results[k].result[algo][k][cor_num][init_num]["num_iters"] == iter-1:
                             centers = results[k].result[algo][k][cor_num][init_num]["centers"]
-                            job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers],q))
+                            job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers,n_samples,sample_size],q))
                             jobs.append(job)
     # Closing Multiprocessing Pool
     for job in tqdm(jobs):
