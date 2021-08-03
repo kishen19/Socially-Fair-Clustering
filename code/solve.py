@@ -7,7 +7,7 @@ import sys
 
 from utils.classes import Point
 from utils.utilities import gen_rand_partition
-from code.algos import run_algo, run_lloyd, run_fair_lloyd, LinearProjClustering
+from code.algos import run_algo,run_algo2, run_lloyd, run_fair_lloyd, LinearProjClustering
 from coresets import coresets
 
 
@@ -30,11 +30,13 @@ def process(args,q):
     algo,k,cor_num,init_num,iter,data,coreset,d,ell,z,centers = args
     try:
         if algo == "ALGO":
-            new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers)
+            new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers=centers)
+        elif algo == "ALGO2":
+            new_centers, time_taken = run_algo2(data,k,d,ell,z,centers=centers) # Default: n_samples = 5, sample_size = 1000
         elif algo=="Lloyd":
-            new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers)
+            new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers=centers)
         elif algo=="Fair-Lloyd":
-            new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers)
+            new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers=centers)
         q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
     except ValueError as e:
         print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
@@ -48,14 +50,6 @@ def process(args,q):
         print("ALGO: Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
-
-    # if algo == "ALGO":
-    #     new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers)
-    # elif algo=="Lloyd":
-    #     new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers)
-    # elif algo=="Fair-Lloyd":
-    #     new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers)
-    # q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
 
 #----------------------------------------------------------------------#
 # Main Function

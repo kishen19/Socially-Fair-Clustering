@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 
-from code.algos import run_algo, run_fair_lloyd, run_lloyd
+from code.algos import run_algo, run_algo2, run_fair_lloyd, run_lloyd
 from utils import cluster_assign
 from utils.utilities import Socially_Fair_Clustering_Cost, plot
 from utils.classes import Point,Dataset
@@ -33,6 +33,8 @@ def processPCA(args,q):
     for i in range(n):
         data[i].cluster = assign[i]
     if algo == "ALGO":
+        new_centers,time_taken = run_algo(data,k,d,ell,z)
+    elif algo == "ALGO2":
         new_centers,time_taken = run_algo(data,k,d,ell,z)
     elif algo == "Lloyd":
         new_centers,time_taken = run_lloyd(data,k,d,ell,z)
@@ -77,10 +79,10 @@ def main():
     # attr = "RACE"
     dataset="credit"
     attr = "EDUCATION"
-    isPCA = True
+    isPCA = False
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
-    algos = ["Lloyd","Fair-Lloyd","ALGO"]
+    algos = ["Lloyd","Fair-Lloyd","ALGO2"]#,'ALGO']
     k_vals = range(4,17,2)
 
     dataN,groupsN = get_data(dataset,attr,"N")

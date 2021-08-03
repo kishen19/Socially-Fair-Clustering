@@ -26,6 +26,27 @@ def run_algo(data,k,d,ell,z,centers=None):
     return new_centers, _ed-_st
 
 #-----------------------------------------------------#
+# Our ALGO2
+
+def run_algo2(data,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1000):
+    if centers is not None:
+        reassign(data,centers)
+    best_cost = np.inf
+    best_centers = []
+    runtime = 0
+    for _ in range(n_samples):
+        selected = np.random.choice(range(len(data)), size=sample_size, replace=False)
+        _st = time.time()
+        new_centers,cost_ = kzclustering([data[i] for i in selected],k,d,ell,z) # Call Convex Program
+        _ed = time.time()
+        if cost_ < best_cost:
+            best_cost = cost_
+            best_centers = new_centers
+        runtime += _ed-_st
+    best_centers = [Center(best_centers[i],i) for i in range(k)]
+    return best_centers, runtime/n_samples
+
+#-----------------------------------------------------#
 # Lloyd's Algorithm
 
 def run_lloyd(data,k,d,ell,z,centers=None):

@@ -57,7 +57,7 @@ def get_data(dataset, attr, flag):
         svar, groups = adult_preprocess(sens,attr)
     elif dataset=="LFW":
         svar, groups = LFW_preprocess(sens,attr)
-    data = [Point(data[i],svar[i]) for i in range(data.shape[0])]
+    data = [Point(data[i],int(svar[i])) for i in range(data.shape[0])]
     return data,groups
 
 def dataNgen(dataset):

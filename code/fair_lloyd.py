@@ -7,6 +7,7 @@ def line_search(deltaA, deltaB, alphaA, alphaB, l):
     T = 64
     for i in range(T):
         x = ((1 - gamma) * alphaB * l)/(gamma * alphaA + (1 - gamma) * alphaB)
+        x = np.nan_to_num(x)
         f = deltaA + np.sum(alphaA * np.power(x,2))
         g = deltaB + np.sum(alphaB * np.power(l-x,2))
         
