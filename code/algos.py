@@ -28,21 +28,42 @@ def run_algo(data,k,d,ell,z,centers=None):
 #-----------------------------------------------------#
 # Our ALGO2
 
-def run_algo2(data,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1000):
+def run_algo2(data,groups,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1000):
     if centers is not None:
         reassign(data,centers)
+    n = len(data)
     best_cost = np.inf
     best_centers = []
     runtime = 0
+    data_groupwise = {group:[x for x in data if x.group==group] for group in groups}
+    flag = 0
+    error = ''
     for _ in range(n_samples):
-        selected = np.random.choice(range(len(data)), size=sample_size, replace=False)
-        _st = time.time()
-        new_centers,cost_ = kzclustering([data[i] for i in selected],k,d,ell,z) # Call Convex Program
-        _ed = time.time()
-        if cost_ < best_cost:
-            best_cost = cost_
-            best_centers = new_centers
-        runtime += _ed-_st
+        try:
+            sampled_data = []
+            rem = sample_size
+            for ind,group in enumerate(groups):
+                group_sample = rem if ind == len(groups)-1 else int(len(data_groupwise[group])*sample_size/n)
+                rem -= group_sample
+                selected = np.random.choice(range(len(data_groupwise[group])), size=group_sample, replace=False)
+                group_data = [data_groupwise[group][i] for i in selected]
+                for x in group_data:
+                    x.weight = len(data_groupwise[group])/group_sample
+                sampled_data += group_data
+            _st = time.time()
+            new_centers,cost_ = kzclustering(sampled_data,k,d,ell,z) # Call Convex Program
+            _ed = time.time()
+            if cost_ < best_cost:
+                best_cost = cost_
+                best_centers = new_centers
+            runtime += _ed-_st
+            flag = 1
+        except ValueError as e:
+            error = e
+        except ArithmeticError as e:
+            error = e
+    if flag==0:
+        raise ValueError(error)
     best_centers = [Center(best_centers[i],i) for i in range(k)]
     return best_centers, runtime/n_samples
 

@@ -21,7 +21,10 @@ def update(results,q,mdict):
 def process(args,q):
     algo,k,cor_num,init_num,data,groups,coreset,centers,z = args
     costs = Socially_Fair_Clustering_Cost(data,groups,centers,z)
-    coreset_costs = Socially_Fair_Clustering_Cost(coreset,groups,centers,z)
+    if coreset:
+        coreset_costs = Socially_Fair_Clustering_Cost(coreset,groups,centers,z)
+    else:
+        coreset_costs = {group:0 for group in costs}
     q.put([algo,k,cor_num,init_num,costs,coreset_costs])
 
 def processPCA(args,q):
@@ -54,6 +57,10 @@ def compute_costs(results,z):
     for algo in results.result:
         for k in results.result[algo]:
             for cor_num in results.result[algo][k]:
+                if 'ALGO' in results.result:
+                    coreset = results.coresets[k][cor_num]["data"]
+                else:
+                    coreset = []
                 for init_num in results.result[algo][k][cor_num]:
                     if results.isPCA:
                         centers = results.result[algo][k][cor_num][init_num]["centers"]
@@ -61,7 +68,7 @@ def compute_costs(results,z):
                         jobs.append(job)
                     else:
                         centers = results.result[algo][k][cor_num][init_num]["centers"]
-                        job = pool.apply_async(process,([algo,k,cor_num,init_num,results.data,results.groups,results.coresets[k][cor_num]["data"],centers,z],q)) 
+                        job = pool.apply_async(process,([algo,k,cor_num,init_num,results.data,results.groups,coreset,centers,z],q)) 
                         jobs.append(job)
     for job in tqdm(jobs):
         job.get()
@@ -84,7 +91,7 @@ def main():
     name = dataset+"_"+attr+namesuf
     algos = ["Lloyd","Fair-Lloyd","ALGO2"]#,'ALGO']
     k_vals = range(4,17,2)
-
+    
     dataN,groupsN = get_data(dataset,attr,"N")
     results = Dataset(name,dataN,groupsN,algos)
     for k in tqdm(k_vals):
@@ -120,9 +127,9 @@ def main():
     
     plot([results], 'cost')
     plot([results], 'running_time')
-    plot([results], 'coreset_cost')
+    # plot([results], 'coreset_cost')
     plot([results], 'cost_ratio')
-    plot([results], 'coreset_cost_ratio')
+    # plot([results], 'coreset_cost_ratio')
 
 
 if __name__=="__main__":

@@ -30,7 +30,7 @@ def credit_preprocess(sens,attr):
 
 def adult_preprocess(sens,attr):
     if attr == "SEX":
-        svar = np.asarray([0 if sens[i]=="Female" else 1 for i in range(len(sens))])
+        svar = np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
         groups = {0:"Female",1:"Male"}
     elif attr == "RACE":
         vals = list(set(list(sens)))

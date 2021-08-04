@@ -143,12 +143,9 @@ class Dataset:
                 best = np.inf
                 for cor_num in self.result[algorithm][k]:
                     for init_num in self.result[algorithm][k][cor_num]:
-                        max_ratio = 0
-                        for g1 in groups:
-                            for g2 in groups:
-                                if g1!=g2:
-                                    max_ratio = max(max_ratio,self.result[algorithm][k][cor_num][init_num][val[:-6]][g1]/self.result[algorithm][k][cor_num][init_num][val[:-6]][g2])
-                        best = min(best,max_ratio)
+                        cmin = min(self.result[algorithm][k][cor_num][init_num][val[:-6]].values())
+                        cmax = max(self.result[algorithm][k][cor_num][init_num][val[:-6]].values())
+                        best = min(best, cmax/cmin)    
                 vals.append(best)
             output.append(vals)
             index.append(algorithm)

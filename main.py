@@ -76,7 +76,7 @@ def main():
     isPCA = False
     # ALGO2 related parameters
     n_samples = 5
-    sample_size = 1000
+    sample_size = 3000
     
     # Preprocessing datasets
     dataNgen(dataset)
