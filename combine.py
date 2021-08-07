@@ -89,7 +89,7 @@ def main():
     isPCA = False
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
-    algos = ["Lloyd","Fair-Lloyd","ALGO2"]#,'ALGO']
+    algos = ["Lloyd","Fair-Lloyd","ALGO3"]#,'ALGO']
     k_vals = range(4,17,2)
     
     dataN,groupsN = get_data(dataset,attr,"N")

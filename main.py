@@ -9,6 +9,9 @@ from utils.preprocess import get_data, dataNgen, dataPgen
 from code.solve import solve_clustering
 from coresets import coresets
 
+from sklearn.cluster import KMeans
+from sklearn.utils.extmath import row_norms
+from sklearn.utils import check_random_state
 
 def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=False):
     init_centers = []
@@ -20,9 +23,18 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
     ell = len(groups)
 
     print("k="+str(k)+": Generating Initial Centers")
+    # for init_num in range(num_inits):
+    #     mask = gen_rand_centers(n,k)
+    #     centers = [Center(data[mask[i]].cx,i) for i in range(k)]
+    #     init_centers.append(centers)
+    X = np.asarray([x.cx for x in data])
+    init = 'k-means++'
+    x_squared_norms = row_norms(X, squared=True)
+    kmeans = KMeans(k)
+    random_state = check_random_state(0)
     for init_num in range(num_inits):
-        mask = gen_rand_centers(n,k)
-        centers = [Center(data[mask[i]].cx,i) for i in range(k)]
+        centers = kmeans._init_centroids(X, init = init, x_squared_norms=x_squared_norms, random_state=random_state)
+        centers = [Center(centers[i],i) for i in range(k)]
         init_centers.append(centers)
     print("k="+str(k)+": Done: Generating Initial Centers")
 
@@ -68,7 +80,7 @@ def main():
     dataset = "credit" # "adult"
     attr = "EDUCATION" # "RACE" or "SEX"
     k_vals = range(4,17,2)
-    algos = ['Lloyd','Fair-Lloyd','ALGO2']#,'ALGO']
+    algos = ['Lloyd','Fair-Lloyd','ALGO3']#,'ALGO']
     num_inits = 20
     num_iters = 20
     coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
@@ -87,13 +99,14 @@ def main():
     namesuf="_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
 
-    # Initialization
-    for k in k_vals:
-        init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA)
+    # # Initialization
+    # for k in k_vals:
+    #     init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA)
 
     # Run
-    for iter in tqdm(range(1,num_iters+1)):
+    # for iter in tqdm(range(1,num_iters+1)):
+    for iter in tqdm(range(100,200)):
         solve_clustering(dataset,name,k_vals,z,iter,n_samples,sample_size)
-
+    
 if __name__=='__main__':
     main()

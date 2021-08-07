@@ -109,6 +109,7 @@ class Dataset:
         output = []
         index = []
         if val=="running_time":
+            groups = sorted(self.groups.values())
             vals = []
             ks = [sorted(self.result[algorithm].keys())]
             for k in ks[0]:
@@ -152,4 +153,4 @@ class Dataset:
         else:
             print("Error")
             exit(1)
-        return ks, output, index
+        return ks, output, groups

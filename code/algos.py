@@ -68,6 +68,22 @@ def run_algo2(data,groups,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1
     return best_centers, runtime/n_samples
 
 #-----------------------------------------------------#
+# Our ALGO3
+
+def run_algo3(data,groups,k,d,ell,z,centers=None):
+    if centers is not None:
+        reassign(data,centers)
+    n = len(data)
+    
+    _st = time.time()
+    centers,cost_ = kzclustering(data,k,d,ell,z) # Call Convex Program
+    _ed = time.time()
+    runtime = _ed-_st
+    flag = 1
+    centers = [Center(centers[i],i) for i in range(k)]
+    return centers, runtime
+
+#-----------------------------------------------------#
 # Lloyd's Algorithm
 
 def run_lloyd(data,k,d,ell,z,centers=None):

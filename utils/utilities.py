@@ -42,31 +42,34 @@ def plot(results, y):
     fig, axs = plt.subplots(1, len(results))
     if len(results)==1:
         axs = [axs]
+    # colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
+    #                                         '#f781bf', '#a65628', '#984ea3',
+    #                                         '#999999', '#e41a1c', '#dede00']),
+    #                                 int(1000 + 1))))
+    colors = np.array(list(islice(cycle(['royalblue', 'tab:red', 'black',
+                                            'green', 'yellow']),
+                                    int(1000 + 1))))                            
+    markers = np.array(list(islice(cycle(['s', '^', '.',
+                                            '|', 'o', 'x',
+                                            '>', '<', 'p']),
+                                    int(3 + 1))))
+    
+    linestyles = np.array(list(islice(cycle(['dotted', 'dashed', 'solid', 'dashdot']),
+                                    int(3 + 1))))
+        
     for i, dataset in enumerate(results):
         algorithms = dataset.result.keys()
-        ks = []
-        vals = []
-        index = []
         for j, algo in enumerate(algorithms):
-            k_vals, output, names = dataset.k_vs_val(algo, y)
-            ks += k_vals
-            vals += output
-            index += names
-        colors = np.array(list(islice(cycle(['#377eb8', '#ff7f00', '#4daf4a',
-                                             '#f781bf', '#a65628', '#984ea3',
-                                             '#999999', '#e41a1c', '#dede00']),
-                                      int(len(ks) + 1))))
-        markers = np.array(list(islice(cycle(['s', '.', '^',
-                                             '|', 'o', 'x',
-                                             '>', '<', 'p']),
-                                      int(len(ks) + 1))))
-        
-        for j in range(len(ks)):
-            axs[i].plot(ks[j], vals[j], color=colors[j], markersize=10, marker=markers[j], fillstyle='none', label=index[j])
-            axs[i].legend(loc='upper right')
-            axs[i].set_xlabel('('+chr(i+97)+')\t\t\t$k$\t\t\t')
+            k_vals, output, groups = dataset.k_vs_val(algo, y)
+            if y == 'cost' or y == 'coreset_cost':
+                for group, name in enumerate(groups):
+                    axs[i].plot(k_vals[group], output[group], color=colors[j], markersize=10, marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=1.5, label=algo+" ("+name+")")
+            else:
+                axs[i].plot(k_vals[0], output[0], color=colors[j], markersize=10, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=1.5,  label=algo)
+            axs[i].set_xlabel('$k$')
             axs[i].set_title(dataset.name+' dataset')
-        if i==0:
-            axs[i].set_ylabel(y)
-        
+            if i==0:
+                axs[i].set_ylabel(y)
+            axs[i].legend(loc='upper right')
+                
     plt.savefig("./plots/"+dataset.name+'_fig_sociallyFairClustering_'+y+'.png')

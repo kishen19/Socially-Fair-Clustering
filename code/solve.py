@@ -7,7 +7,7 @@ import sys
 
 from utils.classes import Point
 from utils.utilities import gen_rand_partition
-from code.algos import run_algo,run_algo2, run_lloyd, run_fair_lloyd, LinearProjClustering
+from code.algos import run_algo,run_algo2, run_algo3, run_lloyd, run_fair_lloyd, LinearProjClustering
 from coresets import coresets
 
 
@@ -33,6 +33,8 @@ def process(args,q):
             new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers=centers)
         elif algo == "ALGO2":
             new_centers, time_taken = run_algo2(data,groups,k,d,ell,z,centers=centers,n_samples=n_samples,sample_size=sample_size)
+        elif algo == "ALGO3":
+            new_centers, time_taken = run_algo3(data,groups,k,d,ell,z,centers=centers)
         elif algo=="Lloyd":
             new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers=centers)
         elif algo=="Fair-Lloyd":
@@ -73,18 +75,19 @@ def solve_clustering(dataset,name,k_vals,z,iter,n_samples=5,sample_size=1000):
         if results[k].iters == iter-1:
             data = results[k].get_data()
             for algo in results[k].result:
-                print(algo+"> Start: k="+str(k))
-                n,d,ell = results[k].get_params()
-                for cor_num in results[k].result[algo][k]:
-                    if algo == "ALGO":
-                        coreset = results[k].coresets[k][cor_num]["data"]
-                    else:
-                        coreset = []
-                    for init_num in results[k].result[algo][k][cor_num]:
-                        if results[k].result[algo][k][cor_num][init_num]["num_iters"] == iter-1:
-                            centers = results[k].result[algo][k][cor_num][init_num]["centers"]
-                            job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,results[k].groups,coreset,d,ell,z,centers,n_samples,sample_size],q))
-                            jobs.append(job)
+                if algo == 'Fair-Lloyd':
+                    print(algo+"> Start: k="+str(k))
+                    n,d,ell = results[k].get_params()
+                    for cor_num in results[k].result[algo][k]:
+                        if algo == "ALGO":
+                            coreset = results[k].coresets[k][cor_num]["data"]
+                        else:
+                            coreset = []
+                        for init_num in results[k].result[algo][k][cor_num]:
+                            if results[k].result[algo][k][cor_num][init_num]["num_iters"] == iter-1:
+                                centers = results[k].result[algo][k][cor_num][init_num]["centers"]
+                                job = pool.apply_async(process,([algo,k,cor_num,init_num,iter,data,results[k].groups,coreset,d,ell,z,centers,n_samples,sample_size],q))
+                                jobs.append(job)
     # Closing Multiprocessing Pool
     for job in tqdm(jobs):
         job.get()    
