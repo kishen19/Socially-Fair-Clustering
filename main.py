@@ -13,29 +13,31 @@ from sklearn.cluster import KMeans
 from sklearn.utils.extmath import row_norms
 from sklearn.utils import check_random_state
 
-def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=False):
+def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=False, isKMEANSinit=False):
     init_centers = []
     flag = "P_k="+str(k) if isPCA else "N"
-    
     dataN,groupsN = get_data(dataset,attr,"N") # Read original data
     data,groups = get_data(dataset,attr,flag) # Read required data
     n = len(data)
     ell = len(groups)
 
     print("k="+str(k)+": Generating Initial Centers")
-    # for init_num in range(num_inits):
-    #     mask = gen_rand_centers(n,k)
-    #     centers = [Center(data[mask[i]].cx,i) for i in range(k)]
-    #     init_centers.append(centers)
-    X = np.asarray([x.cx for x in data])
-    init = 'k-means++'
-    x_squared_norms = row_norms(X, squared=True)
-    kmeans = KMeans(k)
-    random_state = check_random_state(0)
-    for init_num in range(num_inits):
-        centers = kmeans._init_centroids(X, init = init, x_squared_norms=x_squared_norms, random_state=random_state)
-        centers = [Center(centers[i],i) for i in range(k)]
-        init_centers.append(centers)
+    if isKMEANSinit:
+        X = np.asarray([x.cx for x in data])
+        init = 'k-means++'
+        x_squared_norms = row_norms(X, squared=True)
+        kmeans = KMeans(k)
+        random_state = check_random_state(0)
+        for init_num in range(num_inits):
+            centers = kmeans._init_centroids(X, init = init, x_squared_norms=x_squared_norms, random_state=random_state)
+            centers = [Center(centers[i],i) for i in range(k)]
+            init_centers.append(centers)
+    else:
+        for init_num in range(num_inits):
+            mask = gen_rand_centers(n,k)
+            centers = [Center(data[mask[i]].cx,i) for i in range(k)]
+            init_centers.append(centers)
+    
     print("k="+str(k)+": Done: Generating Initial Centers")
 
     resultsk = Dataset(name+"_k="+str(k),dataN,groupsN,algos)
@@ -78,14 +80,15 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
 def main():
     # Parameters:
     dataset = "credit" # "adult"
-    attr = "EDUCATION" # "RACE" or "SEX"
+    attr = "EDUCATION" # adult: "RACE" or "GENDER", credit: "EDUCATION"
     k_vals = range(4,17,2)
-    algos = ['Lloyd','Fair-Lloyd','ALGO3']#,'ALGO']
-    num_inits = 20
+    algos = ['Lloyd','Fair-Lloyd','ALGO2']#,'ALGO']
+    num_inits = 200
     num_iters = 20
     coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
     z = 2
-    isPCA = False
+    isPCA = True
+    isKMEANSinit = False
     # ALGO2 related parameters
     n_samples = 5
     sample_size = 3000
@@ -101,11 +104,10 @@ def main():
 
     # # Initialization
     # for k in k_vals:
-    #     init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA)
+    #     init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA, isKMEANSinit)
 
     # Run
-    # for iter in tqdm(range(1,num_iters+1)):
-    for iter in tqdm(range(100,200)):
+    for iter in tqdm(range(1,num_iters+1)):
         solve_clustering(dataset,name,k_vals,z,iter,n_samples,sample_size)
     
 if __name__=='__main__':

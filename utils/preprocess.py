@@ -20,7 +20,7 @@ def credit_preprocess(sens,attr):
     elif attr == "AGE": # Pending
         svar = []
         groups = {}
-    elif attr == "SEX":
+    elif attr == "GENDER":
         svar = sens-1
         groups = {0:"Male",1:"Female"}
     elif attr == "MARRIAGE":
@@ -29,7 +29,7 @@ def credit_preprocess(sens,attr):
     return svar,groups
 
 def adult_preprocess(sens,attr):
-    if attr == "SEX":
+    if attr == "GENDER":
         svar = np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
         groups = {0:"Female",1:"Male"}
     elif attr == "RACE":

@@ -52,7 +52,6 @@ def process(args,q):
         print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
         sys.stdout.flush()
-
 #----------------------------------------------------------------------#
 # Main Function
 #----------------------------------------------------------------------#
@@ -75,7 +74,7 @@ def solve_clustering(dataset,name,k_vals,z,iter,n_samples=5,sample_size=1000):
         if results[k].iters == iter-1:
             data = results[k].get_data()
             for algo in results[k].result:
-                if algo == 'Fair-Lloyd':
+                if algo == 'Lloyd' or algo == 'Fair-Lloyd':
                     print(algo+"> Start: k="+str(k))
                     n,d,ell = results[k].get_params()
                     for cor_num in results[k].result[algo][k]:

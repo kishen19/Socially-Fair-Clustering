@@ -54,7 +54,9 @@ def plot(results, y):
                                             '>', '<', 'p']),
                                     int(3 + 1))))
     
-    linestyles = np.array(list(islice(cycle(['dotted', 'dashed', 'solid', 'dashdot']),
+    markersize = np.array(list(islice(cycle([12,10,14]),
+                                    int(3 + 1))))
+    linestyles = np.array(list(islice(cycle(['dotted', 'solid', 'dashed', 'dashdot']),
                                     int(3 + 1))))
         
     for i, dataset in enumerate(results):
@@ -63,9 +65,9 @@ def plot(results, y):
             k_vals, output, groups = dataset.k_vs_val(algo, y)
             if y == 'cost' or y == 'coreset_cost':
                 for group, name in enumerate(groups):
-                    axs[i].plot(k_vals[group], output[group], color=colors[j], markersize=10, marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=1.5, label=algo+" ("+name+")")
+                    axs[i].plot(k_vals[group], output[group], color=colors[j], markersize=markersize[j], marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=1.5, label=algo+" ("+name+")")
             else:
-                axs[i].plot(k_vals[0], output[0], color=colors[j], markersize=10, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=1.5,  label=algo)
+                axs[i].plot(k_vals[0], output[0], color=colors[j], markersize=markersize[j], marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=1.5,  label=algo)
             axs[i].set_xlabel('$k$')
             axs[i].set_title(dataset.name+' dataset')
             if i==0:

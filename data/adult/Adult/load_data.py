@@ -6,7 +6,7 @@ from category_encoders.binary import BinaryEncoder
 TRAIN_FILE = "./adult.data"
 TEST_FILE = "./adult.test"
 
-INDEX_TO_CHANGE = [1,3,5,6,7,8,13,14]
+INDEX_TO_CHANGE = [1,3,5,6,7,8,13]
 
 
 
@@ -17,6 +17,8 @@ def read_data():
 	test_data = np.array(pd.read_csv(TEST_FILE, header=None))
 	
 	data = np.concatenate((train_data, test_data), axis=0)
+
+	data = data[:, :-1]
 
 	encoder = BinaryEncoder(verbose=1, cols=INDEX_TO_CHANGE)
 	encoder.fit(data)
@@ -32,9 +34,9 @@ def read_data():
 
 	final_data[9][final_data[9] == " Male"] =  1
 	final_data[9][final_data[9] == " Female"] =  0
-
-	return final_data
-
+	final_data = final_data.rename(columns={'9': 'GENDER'})
+	print(final_data.columns)
+	final_data.to_csv('adult.csv')
 
 
 if __name__ == "__main__":
