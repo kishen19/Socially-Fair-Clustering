@@ -106,11 +106,11 @@ def run_lloyd(data,k,d,ell,z,centers=None):
 # Reference: Mehrdad Ghadiri, Samira Samadi, and Santosh Vempala. 2021. Socially Fair k-Means Clustering. 
 #            In Proceedings of the 2021 ACM Conference on Fairness, Accountability, and Transparency (FAccT '21).
 
-def run_fair_lloyd(data,k,d,ell,z,centers=None):
+def run_fair_lloyd(data,k,d,ell,z,centers=None,method="line_search",T=64):
     if centers is not None:
         reassign(data,centers)
     _st = time.time()
-    new_centers,cost = solve_kmeans_clustering(data,k,d,ell,z) # Call Convex Program
+    new_centers,cost = solve_kmeans_clustering(data,k,d,ell,z,method=method,num_iters=T) # Call Convex Program
     _ed = time.time()
     new_centers = [Center(new_centers[i],i) for i in range(k)]
     return new_centers, _ed-_st

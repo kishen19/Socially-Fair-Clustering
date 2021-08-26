@@ -86,11 +86,11 @@ def compute_costs(results,z):
     return results        
 
 def main():
-    # dataset="adult"
-    # attr = "RACE"
-    dataset="credit"
-    attr = "EDUCATION"
-    isPCA = True
+    dataset="adult"
+    attr = "RACE"
+    # dataset="credit"
+    # attr = "EDUCATION"
+    isPCA = False
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
     algos = ["Lloyd","Fair-Lloyd","ALGO2"]#,'ALGO']

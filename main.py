@@ -79,20 +79,23 @@ def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=
 
 def main():
     # Parameters:
-    dataset = "credit" # "adult"
-    attr = "EDUCATION" # adult: "RACE" or "GENDER", credit: "EDUCATION"
+    dataset = "adult" # "adult"
+    attr = "RACE" # adult: "RACE" or "GENDER", credit: "EDUCATION"
     k_vals = range(4,17,2)
     algos = ['Lloyd','Fair-Lloyd','ALGO2']#,'ALGO']
     num_inits = 200
     num_iters = 20
     coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
     z = 2
-    isPCA = True
+    isPCA = False
     isKMEANSinit = False
     # ALGO2 related parameters
     n_samples = 5
     sample_size = 3000
-    
+    # Fair-Lloyd related params
+    method="mw" # "line_search"
+    T = 64 # Number of iterations line_search or mw is run for
+
     # Preprocessing datasets
     dataNgen(dataset)
     if isPCA:
@@ -103,12 +106,12 @@ def main():
     name = dataset+"_"+attr+namesuf
 
     # # Initialization
-    # for k in k_vals:
-    #     init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA, isKMEANSinit)
+    for k in k_vals:
+        init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA, isKMEANSinit)
 
     # Run
     for iter in tqdm(range(1,num_iters+1)):
-        solve_clustering(dataset,name,k_vals,z,iter,n_samples,sample_size)
+        solve_clustering(dataset,name,k_vals,z,iter,n_samples,sample_size,method,T)
     
 if __name__=='__main__':
     main()

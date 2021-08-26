@@ -1,10 +1,10 @@
 import numpy as np
 
-def line_search(deltaA, deltaB, alphaA, alphaB, l):
+def line_search(deltaA, deltaB, alphaA, alphaB, l, num_iters):
     gamma = 0.5
     gammal = 1
     gammah = 0
-    T = 64
+    T = num_iters
     for i in range(T):
         x = ((1 - gamma) * alphaB * l)/(gamma * alphaA + (1 - gamma) * alphaB)
         x = np.nan_to_num(x)
@@ -25,10 +25,22 @@ def line_search(deltaA, deltaB, alphaA, alphaB, l):
     
     return cost, x
 
-def mw():
-    return 0,[]
+def mw(deltas,alphas,mus,num_iters):
+    ell,k = alphas.shape
+    gammas = np.asarray([1/ell for i in range(ell)])
+    T = num_iters
+    for t in range(T):
+        gammasxalphas = (gammas*alphas.T).T
+        coeff = gammasxalphas/np.sum(gammasxalphas,axis=0)
+        C = np.asarray([np.sum([coeff[j,i]*mus[j,i] for j in range(ell)],axis=0) for i in range(k)])
+        fs = deltas +  np.asarray([np.sum(np.power(np.linalg.norm(C-mus[j],axis=1),2)) for j in range(ell)])
+        F = max(fs)
+        ds = F-fs
+        gammas = gammas*(1-ds/(max(ds)*np.sqrt(t+1+1)))
+        gammas/=np.sum(gammas)
+    return F,C
 
-def solve_kmeans_clustering(data,k,d,ell,z,method="line_search"):
+def solve_kmeans_clustering(data,k,d,ell,z,method="line_search",num_iters=64):
     mus = np.zeros([ell,k,d])
     l = np.zeros(k)
     alphas = np.zeros([ell,k])
@@ -43,36 +55,31 @@ def solve_kmeans_clustering(data,k,d,ell,z,method="line_search"):
             dataC[i][j] = np.asarray(dataC[i][j])
     for i in range(k):
         for j in range(ell):
-            alphas[j,i] = dataC[i][j].shape[0] / group_size[j]
-        if method=="line_search":
-            if alphas[0,i] + alphas[1,i] != 0:
-                if alphas[0,i] == 0:
-                    mus[0,i,:] = np.mean(dataC[i][1], axis=0)
-                    mus[1,i,:] = mus[0,i,:]
-                elif alphas[1,i] == 0:
-                    mus[0,i,:] = np.mean(dataC[i][0], axis=0)
-                    mus[1,i,:] = mus[0,i,:]
+            alphas[j,i] = dataC[i][j].shape[0]/group_size[j]
+        if np.sum(alphas[:,i])!=0:
+            w = np.nonzero(alphas[:,i])[0][0]
+            mubase = np.mean(dataC[i][int(w)],axis=0)
+            for j in range(ell):
+                if alphas[j,i]==0:
+                    mus[j,i,:] = mubase
                 else:
-                    mus[0,i,:] = np.mean(dataC[i][0], axis=0)
-                    mus[1,i,:] = np.mean(dataC[i][1], axis=0)
+                    mus[j,i,:] = np.mean(dataC[i][j],axis=0)
+            if method=="line_search":
                 l[i] = np.linalg.norm(mus[0,i,:] - mus[1,i,:])
-                       
-                    
-                if dataC[i][0].shape[0] > 0:
-                    deltas[0] += np.sum(np.power(np.linalg.norm(dataC[i][0] - mus[0,i,:],axis=1),2))
-                if dataC[i][1].shape[0] > 0:
-                    deltas[1] += np.sum(np.power(np.linalg.norm(dataC[i][1] - mus[1,i,:],axis=1),2))
-        
+
+        for j in range(ell):
+            if dataC[i][j].shape[0] > 0:
+                deltas[j] += np.sum(np.power(np.linalg.norm(dataC[i][j] - mus[j,i,:],axis=1),2))
+
     deltas /= np.asarray([sum([dataC[i][j].shape[0] for i in range(k)]) for j in range(ell)])
     if method=="line_search":
-        cost, x = line_search(deltas[0], deltas[1], alphas[0], alphas[1], l)
+        cost, x = line_search(deltas[0], deltas[1], alphas[0], alphas[1], l, num_iters)
         centers = np.zeros([k,d])
         for i in range(k):
             if l[i] == 0:
                 centers[i, :] = mus[0,i,:]
             else:
                 centers[i, :] = ((l[i]-x[i])*mus[0,i,:] + x[i]*mus[1,i,:])/l[i]
-    else:
-        cost,x = mw()
-        centers = np.zeros([k,d])
+    elif method=="mw":
+        cost,centers = mw(deltas,alphas,mus,num_iters)
     return centers, cost

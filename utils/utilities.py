@@ -52,12 +52,12 @@ def plot(results, y):
     markers = np.array(list(islice(cycle(['s', '^', '.',
                                             '|', 'o', 'x',
                                             '>', '<', 'p']),
-                                    int(3 + 1))))
+                                    int(5 + 1))))
     
     markersize = np.array(list(islice(cycle([12,10,14]),
-                                    int(3 + 1))))
+                                    int(5 + 1))))
     linestyles = np.array(list(islice(cycle(['dotted', 'solid', 'dashed', 'dashdot']),
-                                    int(3 + 1))))
+                                    int(5 + 1))))
         
     for i, dataset in enumerate(results):
         algorithms = dataset.result.keys()
