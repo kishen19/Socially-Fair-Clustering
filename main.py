@@ -84,10 +84,10 @@ def main():
     k_vals = range(4,17,2)
     algos = ['Lloyd','Fair-Lloyd','ALGO2']#,'ALGO']
     num_inits = 200
-    num_iters = 20
+    num_iters = 200
     coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
     z = 2
-    isPCA = False
+    isPCA = True
     isKMEANSinit = False
     # ALGO2 related parameters
     n_samples = 5
@@ -97,7 +97,7 @@ def main():
     T = 64 # Number of iterations line_search or mw is run for
 
     # Preprocessing datasets
-    dataNgen(dataset)
+    # dataNgen(dataset)
     if isPCA:
         for k in k_vals:
             dataPgen(dataset,k)

@@ -20,7 +20,7 @@ def run_algo(data,k,d,ell,z,centers=None):
     if centers is not None:
         reassign(data,centers)
     _st = time.time()
-    new_centers,cost_ = kzclustering(data,k,d,ell,z) # Call Convex Program
+    new_centers,cost_ = kzclustering(data,k,d,ell,z,centers) # Call Convex Program
     _ed = time.time()
     new_centers = [Center(new_centers[i],i) for i in range(k)]
     return new_centers, _ed-_st
@@ -51,7 +51,7 @@ def run_algo2(data,groups,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1
                     x.weight = len(data_groupwise[group])/group_sample
                 sampled_data += group_data
             _st = time.time()
-            new_centers,cost_ = kzclustering(sampled_data,k,d,ell,z) # Call Convex Program
+            new_centers,cost_ = kzclustering(sampled_data,k,d,ell,z,centers) # Call Convex Program
             _ed = time.time()
             if cost_ < best_cost:
                 best_cost = cost_
@@ -76,7 +76,7 @@ def run_algo3(data,groups,k,d,ell,z,centers=None):
     n = len(data)
     
     _st = time.time()
-    centers,cost_ = kzclustering(data,k,d,ell,z) # Call Convex Program
+    centers,cost_ = kzclustering(data,k,d,ell,z,centers) # Call Convex Program
     _ed = time.time()
     runtime = _ed-_st
     flag = 1

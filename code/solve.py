@@ -28,30 +28,30 @@ def update(results,q,mdict):
 # Processing each Input
 def process(args,q):
     algo,k,cor_num,init_num,iter,data,groups,coreset,d,ell,z,centers,n_samples,sample_size,method,T = args
-    # try:
-    if algo == "ALGO":
-        new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers=centers)
-    elif algo == "ALGO2":
-        new_centers, time_taken = run_algo2(data,groups,k,d,ell,z,centers=centers,n_samples=n_samples,sample_size=sample_size)
-    elif algo == "ALGO3":
-        new_centers, time_taken = run_algo3(data,groups,k,d,ell,z,centers=centers)
-    elif algo=="Lloyd":
-        new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers=centers)
-    elif algo=="Fair-Lloyd":
-        new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers=centers,method=method,T=T)
-    q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
-    # except ValueError as e:
-    #     print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
-    #     print(e)
-    #     sys.stdout.flush()
-    # except ArithmeticError as e:
-    #     print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
-    #     print(e)
-    #     sys.stdout.flush()
-    # except TypeError as e:
-    #     print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
-    #     print(e)
-    #     sys.stdout.flush()
+    try:
+        if algo == "ALGO":
+            new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers=centers)
+        elif algo == "ALGO2":
+            new_centers, time_taken = run_algo2(data,groups,k,d,ell,z,centers=centers,n_samples=n_samples,sample_size=sample_size)
+        elif algo == "ALGO3":
+            new_centers, time_taken = run_algo3(data,groups,k,d,ell,z,centers=centers)
+        elif algo=="Lloyd":
+            new_centers, time_taken = run_lloyd(data,k,d,ell,z,centers=centers)
+        elif algo=="Fair-Lloyd":
+            new_centers, time_taken = run_fair_lloyd(data,k,d,ell,z,centers=centers,method='mw',T=T)
+        q.put([algo,k,cor_num,init_num,iter,new_centers,time_taken])
+    except ValueError as e:
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e)
+        sys.stdout.flush()
+    except ArithmeticError as e:
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e)
+        sys.stdout.flush()
+    except TypeError as e:
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e)
+        sys.stdout.flush()
 #----------------------------------------------------------------------#
 # Main Function
 #----------------------------------------------------------------------#
@@ -74,7 +74,7 @@ def solve_clustering(dataset,name,k_vals,z,iter,n_samples=5,sample_size=1000,met
         if results[k].iters == iter-1:
             data = results[k].get_data()
             for algo in results[k].result:
-                if algo == 'Lloyd' or algo == 'Fair-Lloyd':
+                if 'ALGO' not in algo or ('ALGO' in algo and iter <= 20):
                     print(algo+"> Start: k="+str(k))
                     n,d,ell = results[k].get_params()
                     for cor_num in results[k].result[algo][k]:

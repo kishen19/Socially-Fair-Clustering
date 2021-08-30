@@ -36,11 +36,11 @@ def processPCA(args,q):
     for i in range(n):
         data[i].cluster = assign[i]
     if algo == "ALGO":
-        new_centers,time_taken = run_algo(data,k,d,ell,z)
+        new_centers,time_taken = run_algo(data,k,d,ell,z,None)
     elif algo == "ALGO2":
-        new_centers,time_taken = run_algo(data,k,d,ell,z)
+        new_centers,time_taken = run_algo(data,k,d,ell,z,None)
     elif algo == "ALGO3":
-        new_centers, time_taken = run_algo3(data,groups,k,d,ell,z)
+        new_centers, time_taken = run_algo3(data,groups,k,d,ell,z,None)
         print("here",np.asarray([c.cx for c in new_centers]).shape)
     elif algo == "Lloyd":
         new_centers,time_taken = run_lloyd(data,k,d,ell,z)
@@ -90,10 +90,10 @@ def main():
     attr = "RACE"
     # dataset="credit"
     # attr = "EDUCATION"
-    isPCA = False
+    isPCA = True
     namesuf= "_wPCA" if isPCA else "_woPCA"
     name = dataset+"_"+attr+namesuf
-    algos = ["Lloyd","Fair-Lloyd","ALGO2"]#,'ALGO']
+    algos = ['Lloyd','Fair-Lloyd','ALGO2']#,'ALGO']
     k_vals = range(4,17,2)
     
     dataN,groupsN = get_data(dataset,attr,"N")
