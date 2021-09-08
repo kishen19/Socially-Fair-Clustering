@@ -1,4 +1,5 @@
 from random import randint, sample, shuffle
+from os import makedirs
 import numpy as np
 from matplotlib import pyplot as plt
 from itertools import cycle, islice
@@ -13,27 +14,38 @@ def gen_rand_centers(n,k):
     shuffle(init)
     return init
 
-def distance(a,b):
-    return np.linalg.norm(np.asarray(a)-np.asarray(b))
+def assign_subspace(data,centers):
+    assign = [-1 for i in range(len(data))]
+    for i,x in enumerate(data):
+        best = np.inf
+        for j,center in enumerate(centers):
+            dist = center.distance(x)
+            if best < dist:
+                assign[i] = j
+                best = dist
+    return np.asarray(assign)
 
-def compute_cost(data,centers,z):
+def compute_cost(data,centers,J,z):
     n = len(data)
-    assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.asarray([c.cx for c in centers]))
+    if J==0:
+        assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.asarray([c.cx for c in centers]))
+    else:
+        assign = assign_subspace(data,centers)
     cost = 0
     tot = 0
     for i in range(n):
-        cost += data[i].weight*(distance(centers[assign[i]].cx, data[i].cx)**z)
+        cost += data[i].weight*(centers[assign[i]].distance(data[i])**z)
         tot += data[i].weight
     return cost/tot
 
-def Socially_Fair_Clustering_Cost(data,groups,centers,z):
+def Socially_Fair_Clustering_Cost(data,groups,centers,J,z):
     costs = {}
     for group in groups:
-        group_cost = compute_cost([x for x in data if x.group == group],centers,z)
+        group_cost = compute_cost([x for x in data if x.group == group],centers,J,z)
         costs[groups[group]] = group_cost
     return costs
 
-def plot(results, y):
+def plot(results, y, param="k"):
     '''
     results: list of Dataset objects; list
     y: y-axis label; str
@@ -62,16 +74,16 @@ def plot(results, y):
     for i, dataset in enumerate(results):
         algorithms = dataset.result.keys()
         for j, algo in enumerate(algorithms):
-            k_vals, output, groups = dataset.k_vs_val(algo, y)
+            param_vals, output, groups = dataset.k_vs_val(algo, y) if param=="k" else dataset.J_vs_val(algo, y)
             if y == 'cost' or y == 'coreset_cost':
                 for group, name in enumerate(groups):
-                    axs[i].plot(k_vals[group], output[group], color=colors[j], markersize=markersize[j], marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=1.5, label=algo+" ("+name+")")
+                    axs[i].plot(param_vals[group], output[group], color=colors[j], markersize=markersize[j], marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=1.5, label=algo+" ("+name+")")
             else:
-                axs[i].plot(k_vals[0], output[0], color=colors[j], markersize=markersize[j], marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=1.5,  label=algo)
-            axs[i].set_xlabel('$k$')
+                axs[i].plot(param_vals[0], output[0], color=colors[j], markersize=markersize[j], marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=1.5,  label=algo)
+            axs[i].set_xlabel('$'+param+'$')
             axs[i].set_title(dataset.name+' dataset')
             if i==0:
                 axs[i].set_ylabel(y)
             axs[i].legend(loc='upper right')
-                
-    plt.savefig("./plots/"+dataset.name+'_fig_sociallyFairClustering_'+y+'.png')
+    makedirs("./plots/"+  dataset.dataset + "/" + dataset.dt_string,exist_ok=True)
+    plt.savefig("./plots/"+  dataset.dataset + "/" + dataset.dt_string + "/" + dataset.name +'_'+param+"_vs_"+y+'.png')

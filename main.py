@@ -1,117 +1,149 @@
-import pickle
+from os import makedirs
 import numpy as np
 from tqdm import tqdm
-import time
+import time,datetime,yaml,pickle,json
 
-from utils.classes import Point, Center, Dataset
-from utils.utilities import gen_rand_centers
-from utils.preprocess import get_data, dataNgen, dataPgen
-from code.solve import solve_clustering
-from coresets import coresets
-
+# Imports relevant to Kmeans++ initialization
 from sklearn.cluster import KMeans
 from sklearn.utils.extmath import row_norms
 from sklearn.utils import check_random_state
 
-def init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA=False, isKMEANSinit=False):
-    init_centers = []
-    flag = "P_k="+str(k) if isPCA else "N"
-    dataN,groupsN = get_data(dataset,attr,"N") # Read original data
-    data,groups = get_data(dataset,attr,flag) # Read required data
-    n = len(data)
-    ell = len(groups)
-
-    print("k="+str(k)+": Generating Initial Centers")
-    if isKMEANSinit:
-        X = np.asarray([x.cx for x in data])
-        init = 'k-means++'
-        x_squared_norms = row_norms(X, squared=True)
-        kmeans = KMeans(k)
-        random_state = check_random_state(0)
-        for init_num in range(num_inits):
-            centers = kmeans._init_centroids(X, init = init, x_squared_norms=x_squared_norms, random_state=random_state)
-            centers = [Center(centers[i],i) for i in range(k)]
-            init_centers.append(centers)
-    else:
-        for init_num in range(num_inits):
-            mask = gen_rand_centers(n,k)
-            centers = [Center(data[mask[i]].cx,i) for i in range(k)]
-            init_centers.append(centers)
-    
-    print("k="+str(k)+": Done: Generating Initial Centers")
-
-    resultsk = Dataset(name+"_k="+str(k),dataN,groupsN,algos)
-    if isPCA:
-        resultsk.add_PCA_data(data)
-    
-    # For ALGO
-    if "ALGO" in algos:
-        print("k="+str(k)+": Generating Coresets")
-        for coreset_size in coreset_sizes:
-            coreset = []
-            rem = coreset_size
-            _coreset_time = 0
-            for ind,group in enumerate(groups):
-                data_group = [x.cx for x in data if x.group == group]
-                coreset_gen = coresets.KMeansCoreset(data_group,n_clusters=k,method="BLK17")
-                coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
-                rem-=coreset_group_size
-                _st = time.time()
-                coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
-                _ed = time.time()
-                _coreset_time += (_ed - _st)
-                coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
-            resultsk.add_coreset(k,np.asarray(coreset),_coreset_time)
-        print("k="+str(k)+": Done: Generating Coresets")
-
-        for cor_num in range(len(coreset_sizes)):
-            for init_num in range(num_inits):
-                resultsk.add_new_result("ALGO",k,cor_num,init_num,0,init_centers[init_num],0)
-    # For other algorithms
-    for algo in algos:
-        if algo != 'ALGO':
-            for init_num in range(num_inits):
-                resultsk.add_new_result(algo,k,0,init_num,0,init_centers[init_num],0)
-
-    f = open("./results/"+dataset+"/" + name+"_k="+str(k) + "_picklefile","wb")
-    pickle.dump(resultsk,f)
-    f.close()
+from utils.classes import Point, Center, Dataset
+from utils.utilities import gen_rand_centers, gen_rand_partition
+from utils.preprocess import get_data, dataPgen, dataNgen
+from code.solve import solve
+from coresets import coresets
 
 def main():
-    # Parameters:
-    dataset = "adult" # "adult"
-    attr = "RACE" # adult: "RACE" or "GENDER", credit: "EDUCATION"
-    k_vals = range(4,17,2)
-    algos = ['Lloyd','Fair-Lloyd','ALGO2']#,'ALGO']
-    num_inits = 200
-    num_iters = 200
-    coreset_sizes = [1000,1000,1000,2000,2000,2000,3000,3000,3000]
-    z = 2
-    isPCA = True
-    isKMEANSinit = False
-    # ALGO2 related parameters
-    n_samples = 5
-    sample_size = 3000
-    # Fair-Lloyd related params
-    method="mw" # "line_search"
-    T = 64 # Number of iterations line_search or mw is run for
+    # Importing Parameters:
+    path = open("./config.yaml", 'r')
+    params = yaml.load(path)
+    
+    # Reading Parameters:
+    RUN_NEW = params["RUN_NEW"]
+    DT_STRING = params["DT_STRING"]
+    DATASET = params["DATASET"]
+    ATTR = params["ATTR"]
+    Z = params["Z"]
+    K_VALS = params["K_VALS"]
+    J_VALS = params["J_VALS"]
+    NUM_INITS = params["NUM_INITS"]
+    NUM_ITERS = params["NUM_ITERS"]
+    ALGOS = params["ALGOS"]
+    CORESET_SIZES = params["CORESET_SIZES"]
+    ISPCA = params["ISPCA"]
+    ISKMEANSINIT = params["ISKMEANSINIT"]
+    ALGO2_N_SAMPLES = params["ALGO2_N_SAMPLES"]
+    ALGO2_SAMPLE_SIZE = params["ALGO2_SAMPLE_SIZE"]
+    
+    if J_VALS[0] == 0:
+        GEN_CORESET = coresets.KMeansCoreset
+    else:
+        GEN_CORESET = coresets.ProjectiveClusteringCoreset
 
-    # Preprocessing datasets
-    # dataNgen(dataset)
-    if isPCA:
-        for k in k_vals:
-            dataPgen(dataset,k)
+    # Creating Directories:
+    now = datetime.datetime.now()
+    dt_string = ATTR+"_"+now.strftime("%d-%m-%Y_%H-%M-%S") if RUN_NEW is True else DT_STRING
+    makedirs("./results/" + DATASET + "/" + dt_string, exist_ok=True)
 
-    namesuf="_wPCA" if isPCA else "_woPCA"
-    name = dataset+"_"+attr+namesuf
+    # Saving Params Info for reference
+    f = open("./results/"+DATASET+"/"+dt_string+"/"+ "Params_Info.txt","w")
+    f.write(json.dumps(params,indent=4))
+    f.close()
 
-    # # Initialization
-    for k in k_vals:
-        init_dataset(algos, dataset, attr, name, coreset_sizes, num_inits, k, isPCA, isKMEANSinit)
+    # Dataset Preprocessing
+    dataNgen(DATASET)
+    if ISPCA:
+        for k in K_VALS:
+            dataPgen(DATASET,k)
 
-    # Run
-    for iter in tqdm(range(1,num_iters+1)):
-        solve_clustering(dataset,name,k_vals,z,iter,n_samples,sample_size,method,T)
+    NAMESUF = "_wPCA" if ISPCA else "_woPCA"
+    NAME = ATTR + NAMESUF
+
+    # Data and Dataset objects initialization
+    dataN, groups = get_data(DATASET,ATTR,"N") # Get original data
+    if RUN_NEW is True:
+        results = Dataset(DATASET, NAME, dt_string, dataN, groups, ALGOS)
+        for k in K_VALS:
+            flag = "P_k="+str(k) if ISPCA else "N"
+            data,groups = get_data(DATASET,ATTR,flag) # Get required data
+            n = len(data)
+            ell = len(groups)
+
+            # this is tentative, discuss about initializing with partitions
+            init_centers_partitions = []
+            print("k="+str(k)+": Generating Initializations")
+            if 0 in J_VALS:
+                if ISKMEANSINIT:
+                    X = np.asarray([x.cx for x in data])
+                    x_squared_norms = row_norms(X, squared=True)
+                    kmeans = KMeans(k)
+                    random_state = check_random_state(0)
+                    for init_num in range(NUM_INITS):
+                        centers = kmeans._init_centroids(X, init = 'k-means++', x_squared_norms=x_squared_norms, random_state=random_state)
+                        centers = [Center(centers[i],i) for i in range(k)]
+                        init_centers_partitions.append(centers)
+                else:
+                    for init_num in range(NUM_INITS):
+                        mask = gen_rand_centers(n,k)
+                        centers = [Center(data[mask[i]].cx,i) for i in range(k)]
+                        init_centers_partitions.append(centers)
+            else:
+                for init_num in range(NUM_INITS):
+                    mask = gen_rand_partition(n,k)
+                    init_centers_partitions.append(mask)
+            print("k="+str(k)+": Done: Generating Initial Centers")
+
+            if ISPCA:
+                results.add_PCA_data(data,k)
+            
+            # For ALGO
+            if "ALGO" in ALGOS:
+                print("k="+str(k)+": Generating Coresets")
+                for coreset_size in CORESET_SIZES:
+                    coreset = []
+                    rem = coreset_size
+                    _coreset_time = 0
+                    for ind,group in enumerate(groups):
+                        data_group = [x.cx for x in data if x.group == group]
+                        coreset_gen = GEN_CORESET(data_group,n_clusters=k)
+                        coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
+                        rem-=coreset_group_size
+                        _st = time.time()
+                        coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
+                        _ed = time.time()
+                        _coreset_time += (_ed - _st)
+                        coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
+                    results.add_coreset(k,coreset,_coreset_time)
+                print("k="+str(k)+": Done: Generating Coresets")
+
+            for J in J_VALS:
+                if "ALGO" in ALGOS:
+                    for cor_num in range(len(CORESET_SIZES)):
+                        for init_num in range(NUM_INITS):
+                            results.add_new_result("ALGO",k,J,cor_num,init_num,0,init_centers_partitions[init_num],0)
+                
+                # For other algorithms
+                for algo in ALGOS:
+                    if algo != 'ALGO':
+                        for init_num in range(NUM_INITS):
+                            results.add_new_result(algo,k,J,0,init_num,0,init_centers_partitions[init_num],0)
+    else:
+        f = open("./results/" + DATASET + "/" + dt_string + "/" + NAME + "_iters=0","rb")
+        results = pickle.load(f)
+        f.close()    
+
+    f = open("./results/" + DATASET + "/" + dt_string + "/" + NAME + "_iters=0","wb")
+    pickle.dump(results,f)
+    f.close()
+
+    # Start Code Execution
+    for iter in tqdm(range(1,NUM_ITERS+1)):
+        solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, ALGO2_SAMPLE_SIZE)
+    
+    print()
+    print("Paste the following in config.yaml file")
+    print(dt_string)
     
 if __name__=='__main__':
     main()

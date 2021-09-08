@@ -81,4 +81,5 @@ class ProjectiveClusteringCoreset(Coreset):
                 return s_l
             s_old = s_new
             step += 1
+            print(s_old,s_new,flush=True)
         return s_l

@@ -15,20 +15,25 @@ def normalize_data(data):
 
 def credit_preprocess(sens,attr):
     if attr == "EDUCATION":
+        sens = np.asarray(sens.loc[:,attr])
         svar = np.asarray([0 if (sens[i]==1 or sens[i]==2) else 1 for i in range(len(sens))])
         groups = {0:"Lower Education",1:"Higher Education"}
     elif attr == "AGE": # Pending
+        sens = np.asarray(sens.loc[:,attr])
         svar = []
         groups = {}
     elif attr == "GENDER":
+        sens = np.asarray(sens.loc[:,"SEX"])
         svar = sens-1
         groups = {0:"Male",1:"Female"}
     elif attr == "MARRIAGE":
+        sens = np.asarray(sens.loc[:,attr])
         svar = np.asarray([1 if sens[i]==2 else 0 for i in range(len(sens))])
         groups = {0:"Not Married",1:"Married"}
     return svar,groups
 
 def adult_preprocess(sens,attr):
+    sens = np.asarray(sens.loc[:,attr])
     if attr == "GENDER":
         svar = np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
         groups = {0:"Female",1:"Male"}
@@ -39,18 +44,21 @@ def adult_preprocess(sens,attr):
     return svar,groups
 
 def LFW_preprocess(sens,attr): # Pending
-    return [],{}
-    dataAll = pd.read_csv("./data/LFW.csv",index_col = 0)
-    sensitive = dataAll["sex"]
-    data = dataAll.iloc[:,4:]
-    dataN = normalize_data(data)
-    return dataN, sensitive, {0:"Female",1:"Male"}
+    if attr == "GENDER":
+        sens = np.asarray(sens.loc[:,"sex"])
+        svar = np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
+        groups = {0:"Female",1:"Male"}
+    elif attr == "RACE":
+        sens = np.asarray(sens.loc[:,attr])
+        vals = sens.columns[:1]
+        svar = np.asarray([vals.index(sens[i]) for i in range(len(sens))])
+        groups = {vals.index(val):val for val in vals}
+    return svar,groups
 
 def get_data(dataset, attr, flag):
     data = pd.read_csv("./data/" + dataset + "/" + dataset + flag + ".csv",index_col=0)
     sens = pd.read_csv("./data/" + dataset + "/" + dataset + "_sensattr.csv",index_col=0)
     data = np.asarray(data)
-    sens = np.asarray(sens.loc[:,attr])
     if dataset=="credit":
         svar, groups = credit_preprocess(sens,attr)
     elif dataset=="adult":

@@ -1,0 +1,50 @@
+#####################################################################3
+
+# Main.py related params
+RUN_NEW : True
+# True or False
+# False will use the below DT_STRING
+DT_STRING : "EDUCATION_08-09-2021_01-59-32"
+
+# Name of the dataset
+DATASET : "credit"
+# OPTIONS: "adult", "credit", "LFW"
+
+# Name of Sensitive Attribute
+ATTR : "EDUCATION"
+# OPTIONS:
+#   adult:  GENDER (2), RACE (5)
+#   credit: GENDER (2), EDUCATION (2)
+#   LFW:    GENDER (2),
+
+# Values of k
+K_VALS : [1]
+# Standard: [4, 6, 8, 10, 12, 14, 16]
+J_VALS : [1,2,4,6,8,10,15,20]
+# 0: Clustering, >0 for Projective Clustering
+Z : 2
+
+NUM_INITS : 1
+NUM_ITERS : 1
+
+ALGOS : ["ALGO2","PCA"]
+# OPTIONS:
+#   Clustering: "Lloyd", "Fair-Lloyd", "ALGO", "ALGO2", "ALGO3"
+#   Subspace Approximation: "PCA", "Fair-PCA", "ALGO"
+
+# Sizes of Coresets
+CORESET_SIZES : [1000]
+
+# Apply PCA before algorithm starts
+ISPCA : False
+
+# Apply K-Means++ Initialization (Relevant to clustering)
+ISKMEANSINIT : False
+
+## ALGO2 related parameters ##
+ALGO2_N_SAMPLES : 5
+ALGO2_SAMPLE_SIZE : 3000
+
+# Combine.py relevant
+ITER_NUM : 1
+ONLY_PLOT : True

@@ -23,7 +23,7 @@ class Coreset(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, X, n_clusters, w=None, random_state=None,method="FL11"):
+    def __init__(self, X, n_clusters, w=None, random_state=None,method="BLK17"):
         X = check_array(X, accept_sparse="csr", order='C',dtype=[np.float64, np.float32])
         self.X = X
         self.w = w if w is not None else np.ones(X.shape[0])
