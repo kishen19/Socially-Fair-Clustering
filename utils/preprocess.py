@@ -43,16 +43,16 @@ def adult_preprocess(sens,attr):
         groups = {vals.index(val):val for val in vals}
     return svar,groups
 
-def LFW_preprocess(sens,attr): # Pending
+def LFW_preprocess(sens,attr):
     if attr == "GENDER":
         sens = np.asarray(sens.loc[:,"sex"])
         svar = np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
         groups = {0:"Female",1:"Male"}
     elif attr == "RACE":
-        sens = np.asarray(sens.loc[:,attr])
-        vals = sens.columns[:1]
-        svar = np.asarray([vals.index(sens[i]) for i in range(len(sens))])
-        groups = {vals.index(val):val for val in vals}
+        vals = sens.columns[:-1]
+        sens = np.asarray(sens.loc[:,vals])
+        svar = np.asarray([0 if sens[i,0]==1 else (1 if sens[i,1]==1 else 2) for i in range(sens.shape[0])])
+        groups = {i:vals[i] for i in range(len(vals))}
     return svar,groups
 
 def get_data(dataset, attr, flag):

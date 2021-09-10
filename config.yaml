@@ -48,3 +48,5 @@ ALGO2_SAMPLE_SIZE : 3000
 # Combine.py relevant
 ITER_NUM : 1
 ONLY_PLOT : True
+FLAG : 0
+# flag 0 - cost, flag 1 - only pca_cost, flag 2 - both

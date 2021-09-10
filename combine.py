@@ -15,8 +15,12 @@ def update(results,q,mdict):
         if m==[]:
             mdict['output'] = results
             break
-        algo,k,J,cor_num,init_num,costs,coreset_costs = m
-        results.add_new_cost(algo,k,J,cor_num,init_num,costs,coreset_costs)
+        algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,flag = m
+        # flag 0 - cost, flag 1 - only pca_cost, flag 2 - both
+        if flag!=1:
+            results.add_new_cost(algo,k,J,cor_num,init_num,costs,coreset_costs)
+        if flag!=0:
+            results.add_new_PCA_cost(algo,k,J,cor_num,init_num,pca_costs)
     
 def PCA_cost(data,groups,centers):
     costs = {groups[group]:0 for group in groups}
@@ -38,29 +42,39 @@ def process(args,q):
         coreset_costs = Socially_Fair_Clustering_Cost(coreset,groups,centers,J,z)
     else:
         coreset_costs = {group:0 for group in costs}
-    coreset_costs = {group:0 for group in costs}
-    q.put([algo,k,J,cor_num,init_num,costs,coreset_costs])
+    pca_costs = {group:0 for group in costs}
+    q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,0])
 
 def processPCA(args,q):
-    algo,k,J,z,cor_num,init_num,data,groups,dataP,centers = args
+    algo,k,J,z,cor_num,init_num,data,groups,dataP,centers,flag = args
     n = len(data)
     d = len(data[0].cx)
     ell = len(groups)
     if J==0:
-        assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
-        for i in range(n):
-            data[i].cluster = assign[i]
-        if "ALGO" in algo:
-            new_centers,time_taken = run_algo(data,k,d,ell,z,centers=None)
-        elif algo == "Lloyd":
-            new_centers,time_taken = run_lloyd(data,k,d,ell,z)
-        elif algo == "Fair-Lloyd":
-            new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z)
-        costs = Socially_Fair_Clustering_Cost(data,groups,new_centers,J,z)
-        coreset_costs = {group:0 for group in costs}
-        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs])
+        if flag != 1:
+            assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
+            for i in range(n):
+                data[i].cluster = assign[i]
+                dataP[i].cluster = assign[i]
 
-def compute_costs(results,k_vals,J_vals,algos,Z):
+            if "ALGO" in algo:
+                new_centers,time_taken = run_algo(data,k,d,ell,z,centers=None)
+            elif algo == "Lloyd":
+                new_centers,time_taken = run_lloyd(data,k,d,ell,z)
+            elif algo == "Fair-Lloyd":
+                new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z)
+            costs = Socially_Fair_Clustering_Cost(data,groups,new_centers,J,z)
+            coreset_costs = {group:0 for group in costs}
+        else:
+            costs = {groups[group]:0 for group in groups}
+            coreset_costs = {group:0 for group in costs}
+        if flag != 0:
+            pca_costs = Socially_Fair_Clustering_Cost(dataP,groups,centers,J,z)
+        else:
+            pca_costs = {group:0 for group in costs}
+        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs])
+
+def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
     for k in tqdm(k_vals):
         manager = mp.Manager()
         mdict = manager.dict()
@@ -78,7 +92,7 @@ def compute_costs(results,k_vals,J_vals,algos,Z):
                     for init_num in results.result[algo][k][J][cor_num]:
                         centers = results.result[algo][k][J][cor_num][init_num]["centers"]
                         if results.isPCA:
-                            job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.groups,results.dataP,centers],q))
+                            job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.groups,results.dataP,centers,flag],q))
                         else:
                             job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.groups,coreset,centers],q))
                         jobs.append(job)
@@ -109,6 +123,7 @@ def main():
     DT_STRING = params["DT_STRING"]
     ITER_NUM = params["ITER_NUM"]
     ONLY_PLOT = params["ONLY_PLOT"]
+    FLAG = params["FLAG"]
     NAMESUF = "_wPCA" if ISPCA else "_woPCA"
     NAME = ATTR + NAMESUF
     
@@ -117,7 +132,7 @@ def main():
         results = pickle.load(f)
         f.close()
 
-        results = compute_costs(results, K_VALS, J_VALS, ALGOS, Z)
+        results = compute_costs(results, K_VALS, J_VALS, ALGOS, Z, FLAG)
 
         f = open("./results/"+DATASET+"/" + DT_STRING + "/" + NAME + "_iters="+str(ITER_NUM),"wb")
         pickle.dump(results,f)
