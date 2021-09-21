@@ -238,15 +238,15 @@ def linearprojclustering(data, k, J, d, ell, q):
                             
     constraints += [obj[j] <= t for j in range(ell)]
     
-    print("Number of constraints is", len(constraints))
+
     # constraints += [np.sum( [wt_a/normalisationfactor*np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[:2]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[4:6]]) <= t]
     # constraints += [np.sum( [np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[2:4]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[6:8]]) <= t]
 
     prob = cp.Problem(cp.Minimize(t), constraints)
-    prob.solve(solver=cp.MOSEK)
+    prob.solve(solver='MOSEK')
 
     # Print result.
-    print("The optimal value is", prob.value)
+    # print("The optimal value is", prob.value)
     
     return [X[i].value for i in range(len(X))], prob.value
 

@@ -10,7 +10,7 @@ from sklearn.utils import check_random_state
 
 from utils.classes import Point, Center, Dataset
 from utils.utilities import gen_rand_centers, gen_rand_partition
-from utils.preprocess import get_data, dataPgen, dataNgen
+from utils.preprocess import get_data, dataPgen, dataNgen, dataNCgen
 from code.solve import solve
 from coresets import coresets
 
@@ -52,7 +52,10 @@ def main():
     f.close()
 
     # Dataset Preprocessing
-    dataNgen(DATASET)
+    if DATASET == 'LFW' and J > 0:
+        dataNCgen(DATASET)
+    else:
+        dataNgen(DATASET)
     if ISPCA:
         for k in K_VALS:
             dataPgen(DATASET,k)
@@ -61,12 +64,18 @@ def main():
     NAME = ATTR + NAMESUF
 
     # Data and Dataset objects initialization
-    dataN, groups = get_data(DATASET,ATTR,"N") # Get original data
+    if DATASET == 'LFW' and J > 0:
+        dataN, dataGC, groups = get_data(DATASET,ATTR,"NC") # Get original data
+    else:
+        dataN, dataGC, groups = get_data(DATASET,ATTR,"N") # Get original data
     if RUN_NEW is True:
-        results = Dataset(DATASET, NAME, dt_string, dataN, groups, ALGOS)
+        results = Dataset(DATASET, NAME, dt_string, dataN, dataGC, groups, ALGOS)
         for k in K_VALS:
-            flag = "P_k="+str(k) if ISPCA else "N"
-            data,groups = get_data(DATASET,ATTR,flag) # Get required data
+            if DATASET == 'LFW' and J > 0:
+                flag = "P_k="+str(k) if ISPCA else "NC"
+            else:
+                flag = "P_k="+str(k) if ISPCA else "N"
+            data,dataGC,groups = get_data(DATASET,ATTR,flag) # Get required data
             n = len(data)
             ell = len(groups)
 
@@ -139,6 +148,7 @@ def main():
 
     # Start Code Execution
     for iter in tqdm(range(1,NUM_ITERS+1)):
+        print(iter)
         solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, ALGO2_SAMPLE_SIZE)
     
     print()

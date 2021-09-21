@@ -14,7 +14,8 @@ def reassign(data,centers):
     for i,p in enumerate(data):
         p.cluster = assign[i]
 
-def assign_subspace(data,centers):
+def assign_subspace(data,dataGC,centers):
+    
     assign = [-1 for i in range(len(data))]
     for i,x in enumerate(data):
         best = np.inf
@@ -23,8 +24,11 @@ def assign_subspace(data,centers):
             if best < dist:
                 assign[i] = j
                 best = dist
+    id = [0 for i in range(len(dataGC))]
     for i,p in enumerate(data):
         p.cluster = assign[i]
+        dataGC[p.group][id[p.group]].cluster = assign[i]
+        id[p.group] += 1
 
 #-----------------------------------------------------#
 # Our ALGO
@@ -129,18 +133,29 @@ def run_algo_proj(data,k,d,ell,z,J,centers=None,init_partition=None):
     new_centers = [Subspace(DTV10rounding(c,d,J),i) for i,c in enumerate(new_centers)]
     return new_centers, _ed - _st
 
-def run_algo_proj2(data,groups,k,d,ell,z,J,centers=None,init_partition=None,sample_size = 1000, n_samples = 5):
+def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=None,sample_size = 1000, n_samples = 5):
     if centers is not None:
-        assign_subspace(data,centers)
+        assign_subspace(data,dataGC,centers)
     else:
         if init_partition is not None:
+            id = [0 for i in range(len(dataGC))]
             for i,p in enumerate(data):
                 p.cluster = init_partition[i]
+                dataGC[p.group][id[p.group]].cluster = init_partition[i]
+                id[p.group] += 1
     n = len(data)
     best_cost = np.inf
     best_centers = []
     runtime = 0
-    data_groupwise = {group:[x for x in data if x.group==group] for group in groups}
+    
+    # ### 1. ALGO on whole centered data
+    # data_groupwise = {group:[x for x in data if x.group==group] for group in groups}
+    # dataGC = data_groupwise
+
+    ### 2. ALGO on group centered data
+    # do nothing
+
+
     flag = 0
     error = ''
     for _ in range(n_samples):
@@ -148,12 +163,12 @@ def run_algo_proj2(data,groups,k,d,ell,z,J,centers=None,init_partition=None,samp
             sampled_data = []
             rem = sample_size
             for ind,group in enumerate(groups):
-                group_sample = rem if ind == len(groups)-1 else int(len(data_groupwise[group])*sample_size/n)
+                group_sample = rem if ind == len(groups)-1 else int(len(dataGC[group])*sample_size/n)
                 rem -= group_sample
-                selected = np.random.choice(range(len(data_groupwise[group])), size=group_sample, replace=False)
-                group_data = [data_groupwise[group][i] for i in selected]
+                selected = np.random.choice(range(len(dataGC[group])), size=group_sample, replace=False)
+                group_data = [dataGC[group][i] for i in selected]
                 for x in group_data:
-                    x.weight = len(data_groupwise[group])/group_sample
+                    x.weight = len(dataGC[group])/group_sample
                 sampled_data += group_data
             _st = time.time()
             new_centers,cost_ = linearprojclustering(sampled_data,k,J,d,ell,z) # Call Convex Program
@@ -196,9 +211,9 @@ def DTV10rounding(X,d,J):
 #---------------------------------------------------#
 # PCA for Subspace Approximation
 
-def run_PCA(data,k,d,ell,z,J,centers=None,init_partition=None):
+def run_PCA(data,dataGC,k,d,ell,z,J,centers=None,init_partition=None):
     if centers is not None:
-        assign_subspace(data,centers)
+        assign_subspace(data,dataGC,centers)
     else:
         if init_partition is not None:
             for i,p in enumerate(data):
@@ -206,8 +221,24 @@ def run_PCA(data,k,d,ell,z,J,centers=None,init_partition=None):
     _st = time.time()
     # d x (d-J): 23 x 13
     pca = PCA(n_components = J) # 30000 x 13
+    
+    # ### (1) projecting data points on pca
     # dataP = pca.fit_transform(np.asarray([p.cx for p in data])) # 30000 x 10
-    dataP = pca.fit_transform(np.asarray([p.cx for p in data])) # 30000 x 10
+
+    # ### (2) projecting group-centered points on group wise pca
+    # dataP = np.array(pca.fit_transform(np.asarray([p.cx for p in dataGC[0]])))
+    # for j in range(1,len(dataGC)):
+    #     dataP = np.concatenate((dataP, pca.fit_transform(np.asarray([p.cx for p in dataGC[j]]))))
+    # dataP = np.asarray(dataP)
+
+    ### (3) projecting group-centered points on pca on whole data
+    pca.fit(np.asarray([p.cx for p in data])) # 30000 x 10
+    dataP = np.array(pca.transform(np.asarray([p.cx for p in dataGC[0]])))
+    for j in range(1,len(dataGC)):
+        dataP = np.concatenate((dataP, pca.transform(np.asarray([p.cx for p in dataGC[j]]))))
+    dataP = np.asarray(dataP)
+
+
     # dataP = (pca.singular_values_ * pca.components_.T) # 13 x 23
     # Q, R = np.linalg.qr(dataP)
     new_centers = Subspace(dataP)

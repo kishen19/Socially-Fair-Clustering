@@ -42,11 +42,12 @@ class Affine:
         pass
     
 class Dataset:
-    def __init__(self, dataset, name, dt_string, data, groups, algos):
+    def __init__(self, dataset, name, dt_string, data, dataGC, groups, algos):
         self.dataset = dataset
         self.name = name
         self.dt_string = dt_string
         self.data = data # Original Data
+        self.dataGC = dataGC # Groupwise Data
         self.groups = groups # Original Groups
 
         # Parameters
@@ -81,6 +82,9 @@ class Dataset:
             return self.dataP[k]
         else:
             return self.data
+    
+    def get_groups_centered(self):
+        return self.dataGC
 
     def get_centers(self,algorithm,k,J,coreset_num,init_num):
         return self.result[algorithm][k][J][coreset_num][init_num]['centers']
