@@ -4,27 +4,32 @@
 RUN_NEW : True
 # True or False
 # False will use the below DT_STRING
-DT_STRING : "GENDER_17-09-2021_17-51-21"
+DT_STRING : "EDUCATION_22-09-2021_02-29-19"
 
 # Name of the dataset
-DATASET : "credit"
-# OPTIONS: "adult", "credit", "LFW"
+DATASET : "bank"
+# OPTIONS: "adult", "credit", "LFW", "bank", "german", "statlog", "skillcraft"
 
 # Name of Sensitive Attribute
-ATTR : "GENDER"
+ATTR : "EDUCATION"
 # OPTIONS:
-#   adult:  GENDER (2), RACE (5)
-#   credit: GENDER (2), EDUCATION (2)
-#   LFW:    GENDER (2),
+#   adult:      GENDER (2), RACE (5)
+#   credit:     GENDER (2), EDUCATION (2)
+#   LFW:        GENDER (2)
+#   german:     AGE (2)
+#   bank:       AGE (2), EDUCATION (2)
+#   skillcraft: AGE (2)
+#   statlog:    GENDER (2), AGE (2)
+# bank 41188 x 20
 
 # Values of k
 K_VALS : [1]
 # Standard: [4, 6, 8, 10, 12, 14, 16]
-J_VALS : [1,5,10,15] #[1,2,4,6,8,10,15,20]
+J_VALS : [1,2,4,6,8,10,12,15,20]
 # 0: Clustering, >0 for Projective Clustering
 Z : 2
 
-NUM_INITS : 10
+NUM_INITS : 1
 NUM_ITERS : 1
 
 ALGOS : ["ALGO2","PCA"]
@@ -42,8 +47,8 @@ ISPCA : False
 ISKMEANSINIT : False
 
 ## ALGO2 related parameters ##
-ALGO2_N_SAMPLES : 10
-ALGO2_SAMPLE_SIZE : 3000
+ALGO2_N_SAMPLES : 5
+ALGO2_SAMPLE_SIZE : 1000
 
 # Combine.py relevant
 ITER_NUM : 1

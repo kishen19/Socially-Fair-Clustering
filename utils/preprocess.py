@@ -100,6 +100,42 @@ def LFW_preprocess(sens,attr):
         groups = {i:vals[i] for i in range(len(vals))}
     return svar,groups
 
+def german_preprocess(sens,attr):
+    if attr == "AGE":
+        sens = np.asarray(sens.loc[:,"Age"])
+        svar = sens #np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
+        groups = {0:"> 40 yrs",1:"<= 40 yrs"}
+    return svar,groups
+
+def bank_preprocess(sens,attr):
+    if attr == "AGE":
+        sens = np.asarray(sens.loc[:,"age"])
+        svar = np.asarray([0 if sens[i] > 40 else 1 for i in range(len(sens))])
+        groups = {0:"> 40 yrs",1:"<= 40 yrs"}
+    elif attr == "EDUCATION":
+        sens = np.asarray(sens.loc[:,"education"])
+        svar = np.asarray([1 if (sens[i][:4]=="prof" or sens[i][:4]=="univ") else 0 for i in range(len(sens))])
+        groups = {0:"Lower Education",1:"Higher Education"}
+    return svar,groups
+
+def skillcraft_preprocess(sens,attr):
+    if attr == "AGE":
+        sens = np.asarray(sens.loc[:,"Age"])
+        svar = np.asarray([0 if sens[i] >= 21 else 1 for i in range(len(sens))])
+        groups = {0:">= 21 yrs",1:"< 21 yrs"}
+    return svar,groups
+
+def statlog_preprocess(sens,attr):
+    if attr == "AGE":
+        sens = np.asarray(sens.loc[:,"Age"])
+        svar = np.asarray([0 if sens[i] > 50 else 1 for i in range(len(sens))])
+        groups = {0:"> 50 yrs",1:"<= 50 yrs"}
+    elif attr == "GENDER":
+        sens = np.asarray(sens.loc[:,"Gender"])
+        svar = sens
+        groups = {0:"Female",1:"Male"}
+    return svar,groups
+
 def get_data(dataset, attr, flag):
     x = pd.read_csv("./data/" + dataset + "/" + dataset + flag + ".csv",index_col=0)
     sens = pd.read_csv("./data/" + dataset + "/" + dataset + "_sensattr.csv",index_col=0)
@@ -110,6 +146,14 @@ def get_data(dataset, attr, flag):
         svar, groups = adult_preprocess(sens,attr)
     elif dataset=="LFW":
         svar, groups = LFW_preprocess(sens,attr)
+    elif dataset=="german":
+        svar, groups = german_preprocess(sens,attr)
+    elif dataset=="bank":
+        svar, groups = bank_preprocess(sens,attr)
+    elif dataset=="skillcraft":
+        svar, groups = skillcraft_preprocess(sens,attr)
+    elif dataset=="statlog":
+        svar, groups = statlog_preprocess(sens,attr)
     y = [[] for i in groups]
     data = []
     for i in range(x.shape[0]):

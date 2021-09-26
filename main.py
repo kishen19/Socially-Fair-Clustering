@@ -52,7 +52,7 @@ def main():
     f.close()
 
     # Dataset Preprocessing
-    if DATASET == 'LFW' and J > 0:
+    if DATASET == 'LFW' and 0 not in J_VALS:
         dataNCgen(DATASET)
     else:
         dataNgen(DATASET)
@@ -64,7 +64,7 @@ def main():
     NAME = ATTR + NAMESUF
 
     # Data and Dataset objects initialization
-    if DATASET == 'LFW' and J > 0:
+    if DATASET == 'LFW' and 0 not in J_VALS:
         dataN, dataGC, groups = get_data(DATASET,ATTR,"NC") # Get original data
     else:
         dataN, dataGC, groups = get_data(DATASET,ATTR,"N") # Get original data
