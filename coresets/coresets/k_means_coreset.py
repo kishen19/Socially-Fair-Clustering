@@ -24,7 +24,7 @@ class KMeansCoreset(Coreset):
         init : for avaiable types, please refer to sklearn.cluster.k_means_._init_centroids
             Method for initialization
         random_state : int, RandomState instance or None, optional (default=None)
-        method: FL11 or BLK17
+        method: FL11 or BLK17 or RANDOM
 
     References
     ----------
@@ -33,7 +33,7 @@ class KMeansCoreset(Coreset):
         [2] Feldman, D. and Langberg,  (2011). A Unified Framework
     """
 
-    def __init__(self, X, n_clusters, w=None, init="k-means++", random_state=None, method="FL11"):
+    def __init__(self, X, n_clusters, w=None, init="k-means++", random_state=None, method="BLK17"):
         self.init = init
         super(KMeansCoreset, self).__init__(X, n_clusters, w, random_state,method)
 
@@ -45,10 +45,11 @@ class KMeansCoreset(Coreset):
         self.centers = centers
         if self.method=="FL11":
             sens = sensitivity.FL11_sensitivity(self.X, self.w, centers, max(np.log(self.n_clusters), 1))
-        else:
+        elif self.method=="BLK17":
             sens = sensitivity.BLK17_sensitivity(self.X, self.w, centers, max(np.log(self.n_clusters), 1))
+        elif self.method=="RANDOM":
+            sens = np.asarray([1]*self.X.shape[0])
         self.p = sens / np.sum(sens)
-
 
 class KMeansLightweightCoreset(Coreset):
     """

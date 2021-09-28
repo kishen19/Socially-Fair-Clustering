@@ -39,6 +39,8 @@ ALGOS : ["ALGO2","PCA"]
 
 # Sizes of Coresets
 CORESET_SIZES : [1000]
+CORESET_METHOD : "RANDOM"
+# RANDOM, BLK17, FL11
 
 # Apply PCA before algorithm starts
 ISPCA : False

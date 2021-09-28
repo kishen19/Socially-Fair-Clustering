@@ -1,6 +1,6 @@
 *.pyc
-data/LFW
-data/original
+*.o
 *.png
 build
 results
+data

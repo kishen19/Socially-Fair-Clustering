@@ -27,16 +27,19 @@ class ProjectiveClusteringCoreset(Coreset):
         [1] 
     """
 
-    def __init__(self, X, w=None, n_clusters=10, J=10, random_state=None):
+    def __init__(self, X, w=None, n_clusters=10, J=10, random_state=None, method="RANDOM"):
         self.n_clusters = n_clusters
         self.J = J
-        super(ProjectiveClusteringCoreset, self).__init__(X, w, random_state)
+        super(ProjectiveClusteringCoreset, self).__init__(X, n_clusters, w=w, random_state=random_state,method=method)
 
     def calc_sampling_distribution(self):
-        sens = []
-        for p in self.X:
-            sens.append(self.calc_sens(self.X,p,self.J))
-        sens = np.asarray(sens)
+        if self.method=="RANDOM":
+            sens = np.asarray([1]*self.X.shape[0])
+        else:
+            sens = []
+            for p in self.X:
+                sens.append(self.calc_sens(self.X,p,self.J))
+            sens = np.asarray(sens)
         self.p = sens/np.sum(sens)
 
     def sorted_eig(self,A):

@@ -31,6 +31,7 @@ def main():
     NUM_ITERS = params["NUM_ITERS"]
     ALGOS = params["ALGOS"]
     CORESET_SIZES = params["CORESET_SIZES"]
+    CORESET_METHOD = params["CORESET_METHOD"]
     ISPCA = params["ISPCA"]
     ISKMEANSINIT = params["ISKMEANSINIT"]
     ALGO2_N_SAMPLES = params["ALGO2_N_SAMPLES"]
@@ -115,7 +116,7 @@ def main():
                     _coreset_time = 0
                     for ind,group in enumerate(groups):
                         data_group = [x.cx for x in data if x.group == group]
-                        coreset_gen = GEN_CORESET(data_group,n_clusters=k)
+                        coreset_gen = GEN_CORESET(data_group,n_clusters=k,method=CORESET_METHOD)
                         coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
                         rem-=coreset_group_size
                         _st = time.time()
