@@ -12,6 +12,8 @@ from utils.classes import Point, Center, Dataset
 from utils.utilities import gen_rand_centers, gen_rand_partition
 from utils.preprocess import get_data, dataPgen, dataNgen, dataNCgen
 from code.solve import solve
+from code.k_medoids import get_dist_matrix
+
 from coresets import coresets
 
 def main():
@@ -71,6 +73,10 @@ def main():
         dataN, dataGC, groups = get_data(DATASET,ATTR,"N") # Get original data
     if RUN_NEW is True:
         results = Dataset(DATASET, NAME, dt_string, dataN, dataGC, groups, ALGOS)
+        if not ISPCA and "KMedoids" in ALGOS:
+            distmatrix = get_dist_matrix(dataN)
+            results.distmatrix = distmatrix
+            
         for k in K_VALS:
             if DATASET == 'LFW' and J > 0:
                 flag = "P_k="+str(k) if ISPCA else "NC"
@@ -79,6 +85,10 @@ def main():
             data,dataGC,groups = get_data(DATASET,ATTR,flag) # Get required data
             n = len(data)
             ell = len(groups)
+            
+            if ISPCA and "KMedoids" in ALGOS:
+                distmatrix = get_dist_matrix(data)
+                results.add_distmatrix(distmatrix,k)
 
             # this is tentative, discuss about initializing with partitions
             init_centers_partitions = []
@@ -96,7 +106,7 @@ def main():
                 else:
                     for init_num in range(NUM_INITS):
                         mask = gen_rand_centers(n,k)
-                        centers = [Center(data[mask[i]].cx,i) for i in range(k)]
+                        centers = [Center(data[mask[i]].cx,i,index=mask[i]) for i in range(k)]
                         init_centers_partitions.append(centers)
             else:
                 for init_num in range(NUM_INITS):
@@ -110,21 +120,22 @@ def main():
             # For ALGO
             if "ALGO" in ALGOS:
                 print("k="+str(k)+": Generating Coresets")
-                for coreset_size in CORESET_SIZES:
-                    coreset = []
-                    rem = coreset_size
-                    _coreset_time = 0
-                    for ind,group in enumerate(groups):
-                        data_group = [x.cx for x in data if x.group == group]
-                        coreset_gen = GEN_CORESET(data_group,n_clusters=k,method=CORESET_METHOD)
-                        coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
-                        rem-=coreset_group_size
-                        _st = time.time()
-                        coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
-                        _ed = time.time()
-                        _coreset_time += (_ed - _st)
-                        coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
-                    results.add_coreset(k,coreset,_coreset_time)
+                for J in J_VALS:
+                    for coreset_size in CORESET_SIZES:
+                        coreset = []
+                        rem = coreset_size
+                        _coreset_time = 0
+                        for ind,group in enumerate(groups):
+                            data_group = [x.cx for x in data if x.group == group]
+                            coreset_gen = GEN_CORESET(data_group,n_clusters=k,method=CORESET_METHOD)
+                            coreset_group_size = int(len(data_group)*coreset_size/n) if ind<ell-1 else rem
+                            rem-=coreset_group_size
+                            _st = time.time()
+                            coreset_group, weights_group = coreset_gen.generate_coreset(coreset_group_size)
+                            _ed = time.time()
+                            _coreset_time += (_ed - _st)
+                            coreset += [Point(coreset_group[i],group,weights_group[i]) for i in range(coreset_group_size)]
+                        results.add_coreset(k,J,coreset,_coreset_time)
                 print("k="+str(k)+": Done: Generating Coresets")
 
             for J in J_VALS:

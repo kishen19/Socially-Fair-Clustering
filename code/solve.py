@@ -7,7 +7,7 @@ import sys
 
 from utils.classes import Point
 from utils.utilities import gen_rand_partition
-from code.algos import run_algo,run_algo2, run_lloyd, run_fair_lloyd, run_algo_proj, run_algo_proj2, run_PCA
+from code.algos import run_algo,run_algo2, run_lloyd, run_fair_lloyd, run_kmedoids, run_algo_proj, run_algo_proj2, run_PCA
 from coresets import coresets
 
 
@@ -27,7 +27,7 @@ def update(results,q,mdict):
 
 # Processing each Input
 def process(args,q):
-    algo,k,J,cor_num,init_num,iter,data,dataGC,groups,coreset,d,ell,z,centers,n_samples,sample_size = args
+    algo,k,J,cor_num,init_num,iter,data,dataGC,distmatrix,groups,coreset,d,ell,z,centers,n_samples,sample_size = args
     if algo == "ALGO":
         if J==0:
             new_centers, time_taken = run_algo(coreset,k,d,ell,z,centers=centers)
@@ -61,6 +61,8 @@ def process(args,q):
             new_centers, time_taken = run_PCA(data,dataGC,k,d,ell,z,J,init_partition=centers)
         else:
             new_centers, time_taken = run_PCA(data,dataGC,k,d,ell,z,J,centers=centers)
+    elif algo=="KMedoids":
+        new_centers, time_taken = run_kmedoids(data,distmatrix,k,d,ell,z,centers=centers)
     q.put([algo,k,J,cor_num,init_num,iter,new_centers,time_taken])
     
     # try:
@@ -97,6 +99,7 @@ def solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, AL
         for k in K_VALS:
             for J in J_VALS:
                 data = results.get_data(k)
+                distmatrix = results.get_distmatrix(k)
                 if J>0:
                     dataGC = results.get_groups_centered() 
                 else:
@@ -113,7 +116,7 @@ def solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, AL
                             for init_num in results.result[algo][k][J][cor_num]:
                                 if results.result[algo][k][J][cor_num][init_num]["num_iters"] == iter-1:
                                     centers = results.result[algo][k][J][cor_num][init_num]["centers"]
-                                    job = pool.apply_async(process,([algo,k,J,cor_num,init_num,iter,data,dataGC,results.groups,coreset,d,ell,Z,centers,ALGO2_N_SAMPLES,ALGO2_SAMPLE_SIZE],q))
+                                    job = pool.apply_async(process,([algo,k,J,cor_num,init_num,iter,data,dataGC,distmatrix,results.groups,coreset,d,ell,Z,centers,ALGO2_N_SAMPLES,ALGO2_SAMPLE_SIZE],q))
                                     jobs.append(job)
         # Closing Multiprocessing Pool
         for job in tqdm(jobs):

@@ -8,6 +8,8 @@ from utils.classes import Center,Subspace
 from utils import cluster_assign
 from code.convex_prog import kzclustering,linearprojclustering
 from code.fair_lloyd import solve_kmeans_clustering
+from code.k_medoids import solve_kmedian_clustering
+
 
 def reassign(data,centers):
     assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in data]),np.asarray([c.cx for c in centers]))
@@ -116,6 +118,14 @@ def run_fair_lloyd(data,k,d,ell,z,centers=None):
     new_centers = [Center(new_centers[i],i) for i in range(k)]
     return new_centers, _ed-_st
 
+#-----------------------------------------------------#
+# K-Medoids
+def run_kmedoids(data,distmatrix,k,d,ell,z,centers=None):
+    _st = time.time()
+    new_centers,cost = solve_kmedian_clustering(data,distmatrix,k,d,ell,z,centers) # Call Convex Program
+    _ed = time.time()
+    final_centers = [Center(data[new_centers[i]],i,index=new_centers[i]) for i in range(k)]
+    return final_centers, _ed-_st
 
 #---------------------------------------------------#
 # Our Algorithm for Socially Fair Projective Clustering

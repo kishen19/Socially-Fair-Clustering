@@ -11,6 +11,7 @@ class Center:
     def __init__(self,coordinates,cluster):
         self.cx= np.asarray(coordinates)
         self.cluster = cluster
+        self.index = None # when centers are points from the data
 
     def distance(self,point):
         return np.linalg.norm(self.cx-point.cx)
@@ -48,6 +49,7 @@ class Dataset:
         self.dt_string = dt_string
         self.data = data # Original Data
         self.dataGC = dataGC # Groupwise Data
+        self.distmatrix = []
         self.groups = groups # Original Groups
 
         # Parameters
@@ -59,17 +61,23 @@ class Dataset:
         self.coresets = {}
         self.result = {algo:{} for algo in algos}
         self.dataP = {}
+        self.distmatrixP = {}
         self.PCA_d = {}
 
     def add_PCA_data(self,data,k):
         self.isPCA = True
         self.dataP[k] = data
         self.PCA_d[k] = len(data[0].cx)
+    
+    def add_PCA_data(self,distmatrix,k):
+        self.distmatrixP[k] = distmatrix
 
-    def add_coreset(self,k,coreset,ctime):
+    def add_coreset(self,k,J,coreset,ctime):
         if k not in self.coresets:
-            self.coresets[k] = []
-        self.coresets[k].append({"data":coreset,"time":ctime})
+            self.coresets[k] = {}
+        if J not in self.coresets[k]:
+            self.coresets[k][J] = []
+        self.coresets[k][J].append({"data":coreset,"time":ctime})
 
     def get_params(self,k):
         if self.isPCA:
@@ -82,6 +90,12 @@ class Dataset:
             return self.dataP[k]
         else:
             return self.data
+    
+    def get_distmatrix(self,k):
+        if self.isPCA:
+            return self.distmatrixP[k]
+        else:
+            return self.distmatrix
     
     def get_groups_centered(self):
         return self.dataGC
