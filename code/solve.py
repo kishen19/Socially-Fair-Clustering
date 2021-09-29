@@ -105,7 +105,7 @@ def solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, AL
                 else:
                     dataGC = None
                 for algo in results.result:
-                    if 'ALGO' not in algo or ('ALGO' in algo and iter <= 20):
+                    if ('ALGO' not in algo and 'Fair' not in algo) or (('ALGO' in algo or 'Fair' in algo) and iter <= 20):
                         print(algo+"> Start: k="+str(k))
                         n,d,ell = results.get_params(k)
                         for cor_num in results.result[algo][k][J]:

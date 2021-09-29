@@ -74,6 +74,7 @@ def main():
     if RUN_NEW is True:
         results = Dataset(DATASET, NAME, dt_string, dataN, dataGC, groups, ALGOS)
         if not ISPCA and "KMedoids" in ALGOS:
+            print("Generating Distance Matrix")
             distmatrix = get_dist_matrix(dataN)
             results.distmatrix = distmatrix
             

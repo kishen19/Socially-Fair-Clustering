@@ -8,10 +8,10 @@ class Point:
         self.cluster = cluster
 
 class Center:
-    def __init__(self,coordinates,cluster):
+    def __init__(self,coordinates,cluster,index=None):
         self.cx= np.asarray(coordinates)
         self.cluster = cluster
-        self.index = None # when centers are points from the data
+        self.index = index # when centers are points from the data
 
     def distance(self,point):
         return np.linalg.norm(self.cx-point.cx)

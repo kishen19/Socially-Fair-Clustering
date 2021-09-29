@@ -81,7 +81,8 @@ def kzclustering(data, k, d, ell, q, centers):
 
         for p in data:
             S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
-            Df[int(p.group),p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
+            if S_p != 0:
+                Df[int(p.group),p.cluster*d:(p.cluster+1)*d] += p.weight*q*(S_p**(q/2-1))*(x_np[p.cluster] - p.cx)
         
         for j in range(ell):
             Df[j,:] /= sum(wts[j])

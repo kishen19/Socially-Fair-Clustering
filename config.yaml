@@ -4,7 +4,7 @@
 RUN_NEW : True
 # True or False
 # False will use the below DT_STRING
-DT_STRING : "EDUCATION_28-09-2021_15-44-16"
+DT_STRING : "EDUCATION_29-09-2021_10-00-17"
 
 # Name of the dataset
 DATASET : "credit"
@@ -23,16 +23,16 @@ ATTR : "EDUCATION"
 # bank 41188 x 20
 
 # Values of k
-K_VALS : [4]
+K_VALS : [4,6]
 # Standard: [4, 6, 8, 10, 12, 14, 16]
 J_VALS : [0] # [1,2,4,6,8,10,12,15,20]
 # 0: Clustering, >0 for Projective Clustering
-Z : 1
+Z : 2
 
-NUM_INITS : 1
-NUM_ITERS : 2
+NUM_INITS : 20
+NUM_ITERS : 100
 
-ALGOS : ["KMedoids"]
+ALGOS : ["ALGO2","Lloyd","Fair-Lloyd"]
 # OPTIONS:
 #   Clustering: "Lloyd", "Fair-Lloyd", "KMedoids", "ALGO", "ALGO2", "ALGO3"
 #   Subspace Approximation: "PCA", "Fair-PCA", "ALGO"
@@ -50,7 +50,7 @@ ISKMEANSINIT : False
 
 ## ALGO2 related parameters ##
 ALGO2_N_SAMPLES : 5
-ALGO2_SAMPLE_SIZE : 3000
+ALGO2_SAMPLE_SIZE : 100
 
 # Combine.py relevant
 ITER_NUM : 1

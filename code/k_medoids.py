@@ -1,12 +1,12 @@
 import kmedoids
 import numpy as np
+from tqdm import tqdm
 
-from utils.classes import Center
 
 def get_dist_matrix(data):
     n = len(data)
     distmatrix = np.zeros([n,n])
-    for i in range(n-1):
+    for i in tqdm(range(n-1)):
         for j in range(i+1,n):
             dist = np.linalg.norm(data[i].cx-data[j].cx)
             distmatrix[i,j] = dist
@@ -15,6 +15,6 @@ def get_dist_matrix(data):
 
 def solve_kmedian_clustering(data,distmatrix,k,d,ell,z,centers):
     # centers is a mask array
-    out = kmedoids.fasterpam(distmatrix,[c.index for c in centers],max_iter=1)
+    out = kmedoids.fasterpam(distmatrix,np.asarray([c.index for c in centers]),max_iter=1)
     print(out.medoids,out.loss)
     return out.medoids, out.loss

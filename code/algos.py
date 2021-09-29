@@ -45,9 +45,56 @@ def run_algo(data,k,d,ell,z,centers=None):
     return new_centers, _ed-_st
 
 #-----------------------------------------------------#
-# Our ALGO2
+# Our ALGO2 - Sample in each Cluster \cap Group
+# 4000 -> 2x10 = 20: 200 per sub-group (Pij)
+# Sample in Pij 200: prob in sample - 200/|Pij|, wts: |Pij|/200 per point sampled
+# E[cost(Sj)] = Sum_i E[Sij]
+# if |Pij|<200, all
 
-def run_algo2(data,groups,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1000):
+def run_algo2(data,groups,k,d,ell,z,centers=None, n_samples = 5, sample_size = 100): # Reminder
+    if centers is not None:
+        reassign(data,centers)
+    n = len(data)
+    best_cost = np.inf
+    best_centers = []
+    runtime = 0
+    data_groupwise = {i:{group:[x for x in data if (x.group==group and x.cluster == i)] for group in groups} for i in range(k)}
+    flag = 0
+    error = ''
+    for _ in range(n_samples):
+        try:
+            sampled_data = []
+            for i in range(k):
+                for group in groups:
+                    if len(data_groupwise[i][group]) < sample_size:
+                        selected = np.asarray(range(len(data_groupwise[i][group])))
+                    else:
+                        selected = np.random.choice(range(len(data_groupwise[i][group])), size=sample_size, replace=False)
+                    group_data = [data_groupwise[i][group][ind] for ind in selected]
+                    for x in group_data:
+                        x.weight = len(data_groupwise[i][group])/min(sample_size,len(data_groupwise[i][group]))
+                    sampled_data += group_data
+            _st = time.time()
+            new_centers,cost_ = kzclustering(sampled_data,k,d,ell,z,centers) # Call Convex Program
+            _ed = time.time()
+            if cost_ < best_cost:
+                best_cost = cost_
+                best_centers = new_centers
+            runtime += _ed-_st
+            flag = 1
+        except ValueError as e:
+            error = e
+        except ArithmeticError as e:
+            error = e
+    if flag==0:
+        raise ValueError(error)
+    best_centers = [Center(best_centers[i],i) for i in range(k)]
+    return best_centers, runtime/n_samples
+
+#-----------------------------------------------------#
+# Our ALGO4 - Random samples
+
+def run_algo4(data,groups,k,d,ell,z,centers=None, n_samples = 5, sample_size = 1000):
     if centers is not None:
         reassign(data,centers)
     n = len(data)
