@@ -96,8 +96,9 @@ def kzclustering(data, k, d, ell, q, centers):
         H_groups = [matrix(0.0, (k*d+1, k*d+1)) for i in range(ell)]
         for p in data:
             S_p = np.linalg.norm(x_np[p.cluster] - p.cx)**2
-            H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
-            if q > 2:
+            if S_p!=0:
+                H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(p.weight/sum(wts[p.group]))*(S_p**(q/2-1))*np.eye(d)
+            if q != 2 and S_p!=0:
                 H_groups[p.group][p.cluster*d:(p.cluster+1)*d,p.cluster*d:(p.cluster+1)*d] += q*(q-2)*(p.weight/sum(wts[p.group]))*(S_p**(q/2-2))*np.matmul(np.transpose(np.asarray([x_np[p.cluster] - p.cx])),np.asarray([x_np[p.cluster] - p.cx]))
 
         H = matrix(0.0, (k*d+1, k*d+1))

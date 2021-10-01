@@ -14,7 +14,5 @@ def get_dist_matrix(data):
     return distmatrix
 
 def solve_kmedian_clustering(data,distmatrix,k,d,ell,z,centers):
-    # centers is a mask array
     out = kmedoids.fasterpam(distmatrix,np.asarray([c.index for c in centers]),max_iter=1)
-    print(out.medoids,out.loss)
     return out.medoids, out.loss

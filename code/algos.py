@@ -171,7 +171,7 @@ def run_kmedoids(data,distmatrix,k,d,ell,z,centers=None):
     _st = time.time()
     new_centers,cost = solve_kmedian_clustering(data,distmatrix,k,d,ell,z,centers) # Call Convex Program
     _ed = time.time()
-    final_centers = [Center(data[new_centers[i]],i,index=new_centers[i]) for i in range(k)]
+    final_centers = [Center(data[new_centers[i]].cx,i,index=new_centers[i]) for i in range(k)]
     return final_centers, _ed-_st
 
 #---------------------------------------------------#

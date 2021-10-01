@@ -107,7 +107,7 @@ def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
                     for init_num in results.result[algo][k][J][cor_num]:
                         centers = results.result[algo][k][J][cor_num][init_num]["centers"]
                         if results.isPCA:
-                            job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.groups,results.dataP,centers,flag],q))
+                            job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.groups,results.dataP[k],centers,flag],q))
                         else:
                             if algo == 'PCA':
                                 data_flag = True # True: group centered data, False: whole centered data

@@ -69,7 +69,7 @@ class Dataset:
         self.dataP[k] = data
         self.PCA_d[k] = len(data[0].cx)
     
-    def add_PCA_data(self,distmatrix,k):
+    def add_distmatrix(self,distmatrix,k):
         self.distmatrixP[k] = distmatrix
 
     def add_coreset(self,k,J,coreset,ctime):
