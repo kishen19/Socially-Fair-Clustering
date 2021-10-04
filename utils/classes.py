@@ -176,6 +176,23 @@ class Dataset:
                 vals.append(max(cost)/min(cost))
             output.append(vals)
             index.append(algorithm)
+        elif val=="cost_mean_std" or val=="coreset_cost_mean_std":
+            groups = sorted(self.groups.values())
+            ks = [sorted(self.result[algorithm].keys())]
+            vals = []
+            for k in ks[0]:
+                cost = []
+                num = 0
+                for cor_num in self.result[algorithm][k][J]:
+                    for init_num in self.result[algorithm][k][J][cor_num]:
+                        if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==self.iters:
+                            cost.append(max([self.result[algorithm][k][J][cor_num][init_num][val[:-9]][group] for group in groups]))
+                            num += 1
+                m = np.mean(cost)
+                std = np.std(cost)
+                vals.append([m,m-std,m+std])
+            output.append(vals)
+            index.append(algorithm)
         else:
             print("Error")
             exit(1)

@@ -102,9 +102,9 @@ def LFW_preprocess(sens,attr):
 
 def german_preprocess(sens,attr):
     if attr == "AGE":
-        sens = np.asarray(sens.loc[:,"Age"])
-        svar = sens #np.asarray([0 if sens[i].strip()=="Female" else 1 for i in range(len(sens))])
-        groups = {0:"> 40 yrs",1:"<= 40 yrs"}
+        sens = np.asarray(sens.loc[:,"AGE"])
+        svar = np.asarray([0 if sens[i]<=25 else 1 for i in range(len(sens))])
+        groups = {0:"> 25 yrs",1:"<= 25 yrs"}
     return svar,groups
 
 def bank_preprocess(sens,attr):
