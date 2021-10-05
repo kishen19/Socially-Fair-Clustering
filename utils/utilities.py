@@ -45,7 +45,7 @@ def Socially_Fair_Clustering_Cost(data,groups,centers,J,z):
         costs[groups[group]] = group_cost
     return costs
 
-def plot(results, y,data, param="k"):
+def plot(results, y, param="k"):
     '''
     results: list of Dataset objects; list
     y: y-axis label; str
@@ -79,10 +79,14 @@ def plot(results, y,data, param="k"):
             if y == 'cost' or y == 'coreset_cost':
                 for group, name in enumerate(groups):
                     axs[i].plot(param_vals[group], output[group], color=colors[j], markersize=markersize[j],markeredgewidth=2 , marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=2, label=algo+" ("+name+")")
+            elif y in ["cost_mean_std","coreset_cost_mean_std"]:
+                axs[i].errorbar(param_vals[0], output[0][0], output[0][1], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=2,  label=algo)
+                # axs[i].plot(param_vals[0], output[0][0], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=2,  label=algo)
+                # axs[i].fill_between(param_vals[0], [output[0][0][ii]-output[0][1][ii] for ii in range(len(output[0][0]))], [output[0][0][ii]+output[0][1][ii] for ii in range(len(output[0][0]))], alpha=0.2, color=colors[j], label=algo)
             else:
                 axs[i].plot(param_vals[0], output[0], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=2,  label=algo)
             axs[i].set_xlabel('$'+param+'$',fontsize=20)
-            axs[i].set_title(data+' '+dataset.name.split('_')[0]+' ('+dataset.name.split('_')[1]+')',fontsize=20)
+            axs[i].set_title(dataset.dataset +' '+dataset.name.split('_')[0]+' ('+dataset.name.split('_')[1]+')',fontsize=20)
             if i==0:
                 axs[i].set_ylabel(y,fontsize=20)
             axs[i].tick_params(axis='both', which='major', labelsize=15)

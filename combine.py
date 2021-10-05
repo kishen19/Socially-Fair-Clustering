@@ -182,8 +182,7 @@ def main():
     plot([results], 'running_time',param)
     # plot([results], 'coreset_cost',param)
     plot([results], 'cost_ratio',param)
-    plot([results], 'cost_mean',param)
-    plot([results], 'cost_std',param)
+    plot([results], 'cost_mean_std',param)
 
 
 

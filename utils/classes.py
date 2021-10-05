@@ -176,10 +176,13 @@ class Dataset:
                 vals.append(max(cost)/min(cost))
             output.append(vals)
             index.append(algorithm)
+        
         elif val=="cost_mean_std" or val=="coreset_cost_mean_std":
             groups = sorted(self.groups.values())
             ks = [sorted(self.result[algorithm].keys())]
             vals = []
+            means = []
+            errors = []
             for k in ks[0]:
                 cost = []
                 num = 0
@@ -190,7 +193,9 @@ class Dataset:
                             num += 1
                 m = np.mean(cost)
                 std = np.std(cost)
-                vals.append([m,m-std,m+std])
+                means.append(m)
+                errors.append(std)
+            vals = [means,errors]
             output.append(vals)
             index.append(algorithm)
         else:
