@@ -1,0 +1,1201 @@
+k=4: Generating Initializations
+k=4: Done: Generating Initial Centers
+k=6: Generating Initializations
+k=6: Done: Generating Initial Centers
+k=8: Generating Initializations
+k=8: Done: Generating Initial Centers
+k=10: Generating Initializations
+k=10: Done: Generating Initial Centers
+k=12: Generating Initializations
+k=12: Done: Generating Initial Centers
+k=14: Generating Initializations
+k=14: Done: Generating Initial Centers
+k=16: Generating Initializations
+k=16: Done: Generating Initial Centers
+1
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+2
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+ALGO2: Failed: k=6 cor_num=0 init=0
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=6 cor_num=0 init=10
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=6 cor_num=0 init=39
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=10 cor_num=0 init=19
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=10 cor_num=0 init=29
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=5
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=19
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=31
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=33
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=46
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=48
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=1
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=9
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=15
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=21
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=23
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=33
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=23
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=38
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=40
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=44
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=48
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+3
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+ALGO2: Failed: k=4 cor_num=0 init=17
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=4 cor_num=0 init=37
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=4 cor_num=0 init=47
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=6 cor_num=0 init=24
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=6 cor_num=0 init=32
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=6 cor_num=0 init=35
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=8 cor_num=0 init=1
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=8 cor_num=0 init=13
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=8 cor_num=0 init=24
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=10 cor_num=0 init=14
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=10 cor_num=0 init=32
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=10 cor_num=0 init=33
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=10 cor_num=0 init=48
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=27
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=12 cor_num=0 init=39
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=8
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=16
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=17
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=14 cor_num=0 init=43
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=3
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=9
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=12
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=11
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+4
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+ALGO2: Failed: k=6 cor_num=0 init=49
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=42
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+5
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+ALGO2: Failed: k=4 cor_num=0 init=34
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+6
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+ALGO2: Failed: k=14 cor_num=0 init=3
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=15
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+7
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+8
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+ALGO2: Failed: k=16 cor_num=0 init=0
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+ALGO2: Failed: k=16 cor_num=0 init=31
+Rank(A) < p or Rank([H(x); A; Df(x); G]) < n
+9
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+10
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+11
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+12
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+13
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+14
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+15
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+16
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+17
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+18
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+19
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+20
+Lloyd> Start: k=4
+Fair-Lloyd> Start: k=4
+ALGO2> Start: k=4
+Lloyd> Start: k=6
+Fair-Lloyd> Start: k=6
+ALGO2> Start: k=6
+Lloyd> Start: k=8
+Fair-Lloyd> Start: k=8
+ALGO2> Start: k=8
+Lloyd> Start: k=10
+Fair-Lloyd> Start: k=10
+ALGO2> Start: k=10
+Lloyd> Start: k=12
+Fair-Lloyd> Start: k=12
+ALGO2> Start: k=12
+Lloyd> Start: k=14
+Fair-Lloyd> Start: k=14
+ALGO2> Start: k=14
+Lloyd> Start: k=16
+Fair-Lloyd> Start: k=16
+ALGO2> Start: k=16
+21
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+22
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+23
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+24
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+25
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+26
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+27
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+28
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+29
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+30
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+31
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+32
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+33
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+34
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+35
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+36
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+37
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+38
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+39
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+40
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+41
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+42
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+43
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+44
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+45
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+46
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+47
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+48
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+49
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+50
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+51
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+52
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+53
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+54
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+55
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+56
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+57
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+58
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+59
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+60
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+61
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+62
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+63
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+64
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+65
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+66
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+67
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+68
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+69
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+70
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+71
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+72
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+73
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+74
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+75
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+76
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+77
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+78
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+79
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+80
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+81
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+82
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+83
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+84
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+85
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+86
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+87
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+88
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+89
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+90
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+91
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+92
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+93
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+94
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+95
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+96
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+97
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+98
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+99
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+100
+Lloyd> Start: k=4
+Lloyd> Start: k=6
+Lloyd> Start: k=8
+Lloyd> Start: k=10
+Lloyd> Start: k=12
+Lloyd> Start: k=14
+Lloyd> Start: k=16
+
+Paste the following in config.yaml file
+RACE_06-10-2021_14-49-01

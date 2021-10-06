@@ -36,11 +36,12 @@ def mw(deltas,alphas,mus):
     for t in range(T):
         gammasxalphas = (gammas*alphas.T).T
         coeff = gammasxalphas/np.sum(gammasxalphas,axis=0)
+        coeff = np.nan_to_num(coeff)
         C = np.asarray([np.sum([coeff[j,i]*mus[j,i] for j in range(ell)],axis=0) for i in range(k)])
         fs = deltas +  np.asarray([np.sum(np.power(np.linalg.norm(C-mus[j],axis=1),2)) for j in range(ell)])
         F = max(fs)
-        if abs(prev-F) < 1e-6:
-            break
+        # if abs(prev-F) < 1e-6:
+        #     break
         prev = F
         ds = F-fs
         gammas = gammas*(1-ds/(max(ds)*np.sqrt(t+1+1)))

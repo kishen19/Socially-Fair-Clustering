@@ -67,10 +67,10 @@ def processPCA(args,q):
     ell = len(groups)
     if J==0:
         if flag != 1:
-            assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
+            assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP[k]]),np.asarray([c.cx for c in centers]))
             for i in range(n):
                 data[i].cluster = assign[i]
-                dataP[i].cluster = assign[i]
+                dataP[k][i].cluster = assign[i]
 
             if "ALGO" in algo:
                 new_centers,time_taken = run_algo(data,k,d,ell,z,centers=None)
@@ -87,7 +87,7 @@ def processPCA(args,q):
             pca_costs = Socially_Fair_Clustering_Cost(dataP,groups,centers,J,z)
         else:
             pca_costs = {group:0 for group in costs}
-        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs])
+        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,0])
 
 def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
     for k in tqdm(k_vals):
@@ -113,7 +113,7 @@ def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
                                 data_flag = True # True: group centered data, False: whole centered data
                                 job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,data_flag],q))
                             else:
-                                data_flag = True
+                                data_flag = False
                                 job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,data_flag],q))
                         jobs.append(job)
         for job in tqdm(jobs):
@@ -162,28 +162,24 @@ def main():
     results = pickle.load(f)
     f.close()
     
-    for algo in results.result:
-        for k in results.result[algo]:
-            for J in results.result[algo][k]:
-                for cor_num in results.result[algo][k][J]:
-                    for init_num in results.result[algo][k][J][cor_num]:
-                        print(algo+"> k="+str(k),"J="+str(J),"cor_num="+str(cor_num),"init="+str(init_num),"->")
-                        for group in results.result[algo][k][J][cor_num][init_num]["cost"]:
-                            print("\t"+group+":",results.result[algo][k][J][cor_num][init_num]["cost"][group],end=" ")
-                        print()
-                        # for group in results.result[algo][k][cor_num][init_num]["coreset_cost"]:
-                        #     print("\t"+group+":",results.result[algo][k][cor_num][init_num]["coreset_cost"][group],end=" ")
-                        # print()
+    # for algo in results.result:
+    #     for k in results.result[algo]:
+    #         for J in results.result[algo][k]:
+    #             for cor_num in results.result[algo][k][J]:
+    #                 for init_num in results.result[algo][k][J][cor_num]:
+    #                     print(algo+"> k="+str(k),"J="+str(J),"cor_num="+str(cor_num),"init="+str(init_num),"->")
+    #                     for group in results.result[algo][k][J][cor_num][init_num]["cost"]:
+    #                         print("\t"+group+":",results.result[algo][k][J][cor_num][init_num]["cost"][group],end=" ")
+    #                     print()
+                       
     if 0 in J_VALS:
         param="k"
     else:
         param = "J"
-    plot([results], 'cost',param)
-    plot([results], 'running_time',param)
-    # plot([results], 'coreset_cost',param)
-    plot([results], 'cost_ratio',param)
-    plot([results], 'cost_mean_std',param)
-
+    plot([results], 'cost', param)
+    plot([results], 'running_time', param)
+    plot([results], 'average cost',param)
+    plot([results], 'cost_ratio', param)
 
 
 if __name__=="__main__":

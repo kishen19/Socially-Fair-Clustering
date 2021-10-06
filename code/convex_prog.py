@@ -110,12 +110,137 @@ def kzclustering(data, k, d, ell, q, centers):
     
     # solve and return c_1, ..., c_k, t
     solvers.options['show_progress'] = False
+    # solvers.options['maxiters'] = 7
     sol = solvers.cpl(c, F)
     centers = np.array(sol['x'][:-1])
     val = sol['x'][-1]
     centers = centers.reshape((k,d))
     return  centers, val
 
+
+def kzclustering_means(data, k, d, ell, q, centers):
+
+    # ~~~ parameters ~~~
+    # k:    the number of clusters; python float
+    # d:    dimension; python float
+    # ell:  number of groups; python int
+    # data: List of Point Objects
+    # Let P_{ji} be points of group j in cluster i
+
+    # ~~~ convex program ~~~
+    #     minimize    (0.c_1 + ... + 0.c_k) + t
+    #     subject to  (\sum_{i \in [k]} \sum_{x \in P_{ji}} wt(x)*\norm{x - c_i}^2)/(\sum_{x \in P_{j}} wt(x)) <= t, forall j \in [\ell].
+    #                       (non-linear constraints)
+    # k+1 Variables:  c_1, ..., c_k and one scalar t.
+    #
+    # c_1,...,c_k:  k vectors in \R^d; centers.
+    # t: one scalar; socially fair clustering cost.
+    
+    # ~~~ in matrix form to run cvxopt solver ~~~
+    # the coefficients are 0 for all the coordinates of all the centers,
+    # and 1 for t.
+    c = matrix(k*d*[0.0] + [1.0])
+    # in this case, n = k*d+1, i.e., we treat x as a vector of size k*d+1.
+    wts = np.zeros((ell,k)) # since we take the whole data, this gives number of points.
+    means = np.zeros((ell, k, d))
+    alphas = np.zeros((ell,k))
+    alpha_group = np.zeros(ell)
+    group_costs = np.zeros(ell)
+    flag = np.zeros((ell,k))
+    for p in data:
+        means[p.group][p.cluster] += p.cx
+        wts[p.group][p.cluster] += 1
+    for j in range(ell):
+        for i in range(k):
+            if wts[j][i] == 0:
+                flag[j][i] = 1
+            else:
+                means[j][i] /= wts[j][i]
+        
+    for p in data:
+        alphas[p.group][p.cluster] += np.linalg.norm(p.cx-means[p.group][p.cluster])**2
+        
+    for j in range(ell):
+        if flag[j][i] == 0:
+            alpha_group[j] = np.sum(alphas[j])/np.sum(wts[j])
+        else:
+            alpha_group[j] = 0
+
+    for j in range(ell):
+        if centers is not None:
+            for i in range(k):
+                if not flag[j][i]:
+                    group_costs[j] += (np.linalg.norm(means[j][i]-centers[i].cx)**q)*wts[j][i]
+        else:
+            for i in range(k):
+                if not flag[j][i]:
+                    group_costs[j] += (np.linalg.norm(means[j][i])**q)*wts[j][i]
+        group_costs[j] /= np.sum(wts[j])
+        group_costs[j] += alpha_group[j]
+    
+
+    val = max(group_costs)
+    def F(x=None, z=None):
+        if x is None:  
+            x0 = matrix(0.0, (k*d+1, 1))
+            if centers is not None:
+                for i in range(k):
+                    x0[i*d:(i+1)*d] = centers[i].cx
+            x0[-1] = val
+            return ell, x0  # consider changing this x0
+        # note that anything is in the domain of f.
+
+        # converting matrix x of shape k*d+1 to numpy array x_np of shape (k,d) ignoring the last element of x
+        x_np = np.array(x[:-1])
+        x_np = x_np.reshape((k,d))
+        # clustering cost minus t: (\sum_{i \in [k]} \sum_{p \in P_{ji}} wt(p)*\norm{p - c_i}^2)/(\sum_{p \in P_j} wt(p)) - t.
+        # using p for points to avoid confusion with x, the variables.
+        # here f is ell dimensional
+        f = matrix(0.0, (ell, 1))
+        for j in range(ell):
+            for i in range(k):
+                if not flag[j][i]:
+                    f[j] += (np.linalg.norm(means[j][i] - x_np[i])**q)*wts[j][i] 
+            f[j] /= np.sum(wts[j])
+            f[j] += alpha_group[j]
+            f[j] -= x[-1]
+            
+        # computing gradients w.r.t. the centers
+        Df = matrix(0.0, (ell,k*d+1))
+
+        for j in range(ell):
+            for i in range(k):
+                if not flag[j][i]:
+                    Df[j,i*d:(i+1)*d] += 2*(wts[j][i]/np.sum(wts[j]))*(x_np[i]- means[j][i])
+        
+        
+        Df[:,-1] = -1.0 # gradient w.r.t. the variable t.
+
+        if z is None: return f, Df
+
+        # H = z_0*Dsr_0 + z_1*Dsr_1 + ... + z_{ell-1}*Dsr_{ell-1}
+        
+        H_groups = [matrix(0.0, (k*d+1, k*d+1)) for i in range(ell)]
+        for j in range(ell):
+            for i in range(k):
+                if not flag[j][i]:
+                    H_groups[j][i*d:(i+1)*d,i*d:(i+1)*d] += 2*(wts[j][i]/sum(wts[j]))*np.eye(d)
+            
+        H = matrix(0.0, (k*d+1, k*d+1))
+        for j in range(ell):
+            H_groups[j][-1,-1] = 0.0
+            H += z[j]*H_groups[j]
+        return f, Df, H
+
+    
+    # solve and return c_1, ..., c_k, t
+    solvers.options['show_progress'] = False
+    sol = solvers.cpl(c, F)
+    centers = np.array(sol['x'][:-1])
+    val = sol['x'][-1]
+    centers = centers.reshape((k,d))
+    return  centers, val
+    
 # def kzclustering_SGD(data, k, d, ell, q):
 
 #     # ~~~ parameters ~~~

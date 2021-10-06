@@ -1,14 +1,14 @@
 #####################################################################3
 
 # Main.py related params
-RUN_NEW : True
+RUN_NEW : False
 # True or False
 # False will use the below DT_STRING
-DT_STRING : "RACE_30-09-2021_17-51-49"
+DT_STRING : "RACE_06-10-2021_14-49-01"
 
 # Name of the dataset
 DATASET : "adult"
-# OPTIONS: "adult", "credit", "LFW", "bank", "german", "statlog", "skillcraft"
+# OPTIONS: "adult", "credit", "LFW"
 
 # Name of Sensitive Attribute
 ATTR : "RACE"
@@ -49,11 +49,11 @@ ISPCA : False
 ISKMEANSINIT : False
 
 ## ALGO2 related parameters ##
-ALGO2_N_SAMPLES : 5
-ALGO2_SAMPLE_SIZE : 100
+ALGO2_N_SAMPLES : 1
+ALGO2_SAMPLE_SIZE : 48842
 
 # Combine.py relevant
-ITER_NUM : 2
-ONLY_PLOT : False
+ITER_NUM : 100
+ONLY_PLOT : True
 FLAG : 0
 # flag 0 - cost, flag 1 - only pca_cost, flag 2 - both

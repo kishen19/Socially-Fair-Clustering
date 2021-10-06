@@ -177,7 +177,7 @@ class Dataset:
             output.append(vals)
             index.append(algorithm)
         
-        elif val=="cost_mean_std" or val=="coreset_cost_mean_std":
+        elif val=="average cost" or val=="average coreset cost":
             groups = sorted(self.groups.values())
             ks = [sorted(self.result[algorithm].keys())]
             vals = []
@@ -185,12 +185,15 @@ class Dataset:
             errors = []
             for k in ks[0]:
                 cost = []
-                num = 0
                 for cor_num in self.result[algorithm][k][J]:
                     for init_num in self.result[algorithm][k][J][cor_num]:
-                        if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==self.iters:
-                            cost.append(max([self.result[algorithm][k][J][cor_num][init_num][val[:-9]][group] for group in groups]))
-                            num += 1
+                        if algorithm == 'ALGO2':
+                            if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==min(20,self.iters):
+                                cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
+                        else:
+                            cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
+                                
+                
                 m = np.mean(cost)
                 std = np.std(cost)
                 means.append(m)
@@ -202,6 +205,7 @@ class Dataset:
             print("Error")
             exit(1)
         return ks, output, groups
+
 
     def J_vs_val(self,algorithm,val,k=1):
         Js = []

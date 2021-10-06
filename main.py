@@ -162,7 +162,7 @@ def main():
     # Start Code Execution
     for iter in tqdm(range(1,NUM_ITERS+1)):
         print(iter)
-        solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, ALGO2_SAMPLE_SIZE)
+        solve(iter, ALGOS, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, ALGO2_SAMPLE_SIZE)
     
     print()
     print("Paste the following in config.yaml file")

@@ -81,7 +81,7 @@ def process(args,q):
 #----------------------------------------------------------------------#
 # Main Function
 #----------------------------------------------------------------------#
-def solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, ALGO2_SAMPLE_SIZE):
+def solve(iter, ALGOS, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, ALGO2_SAMPLE_SIZE):
     f = open("./results/"+ DATASET +"/" + dt_string + "/" + NAME + "_iters="+str(iter-1),"rb")
     results = pickle.load(f)
     f.close()
@@ -102,8 +102,8 @@ def solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, AL
                     dataGC = results.get_groups_centered() 
                 else:
                     dataGC = None
-                for algo in results.result:
-                    if ('ALGO' not in algo and 'Fair' not in algo) or (('ALGO' in algo or 'Fair' in algo) and iter <= 20):
+                for algo in ALGOS:
+                    if ('ALGO' not in algo)  or ('ALGO' in algo  and iter <= 20):
                         print(algo+"> Start: k="+str(k))
                         n,d,ell = results.get_params(k)
                         for cor_num in results.result[algo][k][J]:
@@ -124,8 +124,12 @@ def solve(iter, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMPLES, AL
         results = mdict['output']
         pool.close()
         pool.join()
+        f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"rb")
+        results1 = pickle.load(f)
+        f.close()
+        results1.result["Fair-Lloyd"] = results.result['Fair-Lloyd']
         # Dumping Output to Pickle file
         results.iters = max(results.iters, iter)
         f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"wb")
-        pickle.dump(results,f)
+        pickle.dump(results1,f)
         f.close()

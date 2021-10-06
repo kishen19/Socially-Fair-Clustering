@@ -88,6 +88,12 @@ def adult_preprocess(sens,attr):
         groups = {vals.index(val):val for val in vals}
     return svar,groups
 
+def german_preprocess(sens,attr):
+    sens = np.asarray(sens.loc[:,attr])
+    svar = np.asarray([0 if sens[i]<25 else 1 for i in range(len(sens))])
+    groups = {0:"age<25",1:"age>=25"}
+    return svar,groups
+
 def LFW_preprocess(sens,attr):
     if attr == "GENDER":
         sens = np.asarray(sens.loc[:,"sex"])

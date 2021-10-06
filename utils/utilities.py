@@ -62,12 +62,14 @@ def plot(results, y, param="k"):
     colors = np.array(list(islice(cycle(['blue', 'darkorange', 'black',
                                             'green', 'yellow']),
                                     int(1000 + 1))))                            
-    markers = np.array(list(islice(cycle(['.', '|', '^',
-                                            'o', '.', 'x',
-                                            '>', '<', 'p']),
+    markers = np.array(list(islice(cycle(['.', 'o', '^',
+                                            'p', '.', 'x',
+                                            '>', '<', '|']),
                                     int(5 + 1))))
     
     markersize = np.array(list(islice(cycle([12,10,14]),
+                                    int(5 + 1))))
+    capsize = np.array(list(islice(cycle([5,10,15]),
                                     int(5 + 1))))
     linestyles = np.array(list(islice(cycle(['dotted', 'dashed', 'solid', 'dashdot']),
                                     int(5 + 1))))
@@ -79,17 +81,17 @@ def plot(results, y, param="k"):
             if y == 'cost' or y == 'coreset_cost':
                 for group, name in enumerate(groups):
                     axs[i].plot(param_vals[group], output[group], color=colors[j], markersize=markersize[j],markeredgewidth=2 , marker=markers[group], fillstyle='none', linestyle=linestyles[j], linewidth=2, label=algo+" ("+name+")")
-            elif y in ["cost_mean_std","coreset_cost_mean_std"]:
-                axs[i].errorbar(param_vals[0], output[0][0], output[0][1], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=2,  label=algo)
+            elif y in ["average cost","average coreset cost"]:
+                axs[i].errorbar(param_vals[0], output[0][0], output[0][1], color=colors[j], markersize=0,markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=3,  label=algo, capsize=capsize[j])
                 # axs[i].plot(param_vals[0], output[0][0], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=2,  label=algo)
                 # axs[i].fill_between(param_vals[0], [output[0][0][ii]-output[0][1][ii] for ii in range(len(output[0][0]))], [output[0][0][ii]+output[0][1][ii] for ii in range(len(output[0][0]))], alpha=0.2, color=colors[j], label=algo)
             else:
-                axs[i].plot(param_vals[0], output[0], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=2,  label=algo)
+                axs[i].plot(param_vals[0], output[0], color=colors[j], markersize=markersize[j],markeredgewidth=2, marker=markers[j], fillstyle='none', linestyle=linestyles[j],linewidth=3,  label=algo)
             axs[i].set_xlabel('$'+param+'$',fontsize=20)
             axs[i].set_title(dataset.dataset +' '+dataset.name.split('_')[0]+' ('+dataset.name.split('_')[1]+')',fontsize=20)
             if i==0:
                 axs[i].set_ylabel(y,fontsize=20)
             axs[i].tick_params(axis='both', which='major', labelsize=15)
-            axs[i].legend(loc='upper right',fontsize=10,handlelength=3)
+            # axs[i].legend(loc='upper right',fontsize=15,handlelength=3)
     makedirs("./plots/"+  dataset.dataset + "/" + dataset.dt_string,exist_ok=True)
     plt.savefig("./plots/"+  dataset.dataset + "/" + dataset.dt_string + "/" + dataset.name +'_'+param+"_vs_"+y+'.png')
