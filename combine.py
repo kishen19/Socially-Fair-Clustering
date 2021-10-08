@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 
-from code.algos import run_algo, run_algo2, run_fair_lloyd, run_lloyd
+from code.algos import run_algo, run_algo2, run_fair_lloyd, run_lloyd, run_kmedoids
 from utils import cluster_assign
 from utils.utilities import Socially_Fair_Clustering_Cost, plot
 from utils.classes import Point,Dataset
@@ -61,16 +61,16 @@ def process(args,q):
     q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,0])
 
 def processPCA(args,q):
-    algo,k,J,z,cor_num,init_num,data,groups,dataP,centers,flag = args
+    algo,k,J,z,cor_num,init_num,data,distmatrix,groups,dataP,centers,flag = args
     n = len(data)
     d = len(data[0].cx)
     ell = len(groups)
     if J==0:
         if flag != 1:
-            assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP[k]]),np.asarray([c.cx for c in centers]))
+            assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
             for i in range(n):
                 data[i].cluster = assign[i]
-                dataP[k][i].cluster = assign[i]
+                dataP[i].cluster = assign[i]
 
             if "ALGO" in algo:
                 new_centers,time_taken = run_algo(data,k,d,ell,z,centers=None)
@@ -78,6 +78,8 @@ def processPCA(args,q):
                 new_centers,time_taken = run_lloyd(data,k,d,ell,z)
             elif algo == "Fair-Lloyd":
                 new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z)
+            elif algo=="KMedoids":
+                new_centers,time_taken = run_kmedoids(data,distmatrix,k,d,ell,z,centers=centers)
             costs = Socially_Fair_Clustering_Cost(data,groups,new_centers,J,z)
             coreset_costs = {group:0 for group in costs}
         else:
@@ -107,7 +109,7 @@ def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
                     for init_num in results.result[algo][k][J][cor_num]:
                         centers = results.result[algo][k][J][cor_num][init_num]["centers"]
                         if results.isPCA:
-                            job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.groups,results.dataP[k],centers,flag],q))
+                            job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.distmatrix,results.groups,results.dataP[k],centers,flag],q))
                         else:
                             if algo == 'PCA':
                                 data_flag = True # True: group centered data, False: whole centered data

@@ -4,12 +4,12 @@ from tqdm import tqdm
 import pickle
 import multiprocessing as mp
 import sys
+from os.path import exists
 
 from utils.classes import Point
 from utils.utilities import gen_rand_partition
 from code.algos import run_algo,run_algo2, run_lloyd, run_fair_lloyd, run_kmedoids, run_algo_proj, run_algo_proj2, run_PCA
 from coresets import coresets
-
 
 #----------------------------------------------------------------------#
 # Multiprocessing target functions
@@ -124,12 +124,19 @@ def solve(iter, ALGOS, DATASET, dt_string, NAME, K_VALS, Z, J_VALS, ALGO2_N_SAMP
         results = mdict['output']
         pool.close()
         pool.join()
-        f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"rb")
-        results1 = pickle.load(f)
-        f.close()
-        results1.result["Fair-Lloyd"] = results.result['Fair-Lloyd']
+
         # Dumping Output to Pickle file
-        results.iters = max(results.iters, iter)
-        f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"wb")
-        pickle.dump(results1,f)
-        f.close()
+        if exists("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter)):
+            f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"rb")
+            results1 = pickle.load(f)
+            f.close()
+            for algo in ALGOS:
+                results1.result[algo] = results.result[algo]
+            f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"wb")
+            pickle.dump(results1,f)
+            f.close()
+        else:
+            results.iters = max(results.iters, iter)
+            f = open("./results/"+DATASET+"/" + dt_string + "/" + NAME+"_iters="+str(iter),"wb")
+            pickle.dump(results,f)
+            f.close()

@@ -7,4 +7,5 @@ matplotlib
 tqdm
 cvxopt
 cvxpy
-yaml
+pyyaml
+kmedoids

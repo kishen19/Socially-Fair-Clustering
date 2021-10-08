@@ -87,13 +87,19 @@ class Dataset:
 
     def get_data(self,k):
         if self.isPCA:
-            return self.dataP[k]
+            if k in self.dataP:
+                return self.dataP[k]
+            else:
+                return []
         else:
             return self.data
     
     def get_distmatrix(self,k):
         if self.isPCA:
-            return self.distmatrixP[k]
+            if k in self.distmatrixP:
+                return self.distmatrixP[k]
+            else:
+                return []
         else:
             return self.distmatrix
     
@@ -192,8 +198,6 @@ class Dataset:
                                 cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
                         else:
                             cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
-                                
-                
                 m = np.mean(cost)
                 std = np.std(cost)
                 means.append(m)
@@ -251,6 +255,28 @@ class Dataset:
                         if max(cost) > max(cur_cost):
                             cost = cur_cost
                 vals.append(max(cost)/min(cost))
+            output.append(vals)
+            index.append(algorithm)
+        elif val=="average cost" or val=="average coreset cost":
+            groups = sorted(self.groups.values())
+            Js = [sorted(self.result[algorithm][k].keys())]
+            vals = []
+            means = []
+            errors = []
+            for J in Js[0]:
+                cost = []
+                for cor_num in self.result[algorithm][k][J]:
+                    for init_num in self.result[algorithm][k][J][cor_num]:
+                        if algorithm == 'ALGO2':
+                            if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==min(20,self.iters):
+                                cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
+                        else:
+                            cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
+                m = np.mean(cost)
+                std = np.std(cost)
+                means.append(m)
+                errors.append(std)
+            vals = [means,errors]
             output.append(vals)
             index.append(algorithm)
         else:

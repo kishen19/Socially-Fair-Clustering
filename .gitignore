@@ -1,6 +1,8 @@
 *.pyc
+*.pyd
 *.o
 *.png
 build
 results
 data
+plots
