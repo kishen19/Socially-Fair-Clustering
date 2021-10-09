@@ -4,7 +4,7 @@
 RUN_NEW : True
 # True or False
 # False will use the below DT_STRING
-DT_STRING : "AGE_07-10-2021_08-09-18"
+DT_STRING : "RACE_09-10-2021_15-12-44"
 
 # Name of the dataset
 DATASET : "adult"
@@ -23,16 +23,16 @@ ATTR : "RACE"
 # bank 41188 x 20
 
 # Values of k
-K_VALS : [4, 6, 8, 10, 12, 14, 16]
+K_VALS : [1]
 # Standard: [4, 6, 8, 10, 12, 14, 16]
-J_VALS : [0] # [1,2,4,6,8,10,12,15,20]
+J_VALS : [1,2,4,8,16,32,64]
 # 0: Clustering, >0 for Projective Clustering
 Z : 2
 
-NUM_INITS : 50
-NUM_ITERS : 100
+NUM_INITS : 1
+NUM_ITERS : 1
 
-ALGOS : ["ALGO2","Lloyd","Fair-Lloyd"]
+ALGOS : ["ALGO2","PCA"]
 # OPTIONS:
 #   Clustering: "Lloyd", "Fair-Lloyd", "KMedoids", "ALGO", "ALGO2", "ALGO3"
 #   Subspace Approximation: "PCA", "Fair-PCA", "ALGO"
@@ -43,17 +43,17 @@ CORESET_METHOD : "RANDOM"
 # RANDOM, BLK17, FL11
 
 # Apply PCA before algorithm starts
-ISPCA : True
+ISPCA : False
 
 # Apply K-Means++ Initialization (Relevant to clustering)
 ISKMEANSINIT : False
 
 ## ALGO2 related parameters ##
-ALGO2_N_SAMPLES : 1
-ALGO2_SAMPLE_SIZE : 48842
+ALGO2_N_SAMPLES : 10
+ALGO2_SAMPLE_SIZE : 500
 
 # Combine.py relevant
-ITER_NUM : 100
+ITER_NUM : 1
 ONLY_PLOT : False
 FLAG : 0
 # flag 0 - cost, flag 1 - only pca_cost, flag 2 - both

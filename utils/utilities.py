@@ -59,7 +59,7 @@ def plot(results, y, param="k"):
     #                                         '#f781bf', '#a65628', '#984ea3',
     #                                         '#999999', '#e41a1c', '#dede00']),
     #                                 int(1000 + 1))))
-    colors = np.array(list(islice(cycle(['blue', 'darkorange', 'black',
+    colors = np.array(list(islice(cycle(['black', 'darkorange', 'blue',
                                             'green', 'yellow']),
                                     int(1000 + 1))))                            
     markers = np.array(list(islice(cycle(['.', 'o', '^',
@@ -71,7 +71,7 @@ def plot(results, y, param="k"):
                                     int(5 + 1))))
     capsize = np.array(list(islice(cycle([5,10,15]),
                                     int(5 + 1))))
-    linestyles = np.array(list(islice(cycle(['dotted', 'dashed', 'solid', 'dashdot']),
+    linestyles = np.array(list(islice(cycle(['solid', 'dashed', 'dotted', 'dashdot']),
                                     int(5 + 1))))
         
     for i, dataset in enumerate(results):
@@ -92,6 +92,6 @@ def plot(results, y, param="k"):
             if i==0:
                 axs[i].set_ylabel(y,fontsize=20)
             axs[i].tick_params(axis='both', which='major', labelsize=15)
-            # axs[i].legend(loc='upper right',fontsize=15,handlelength=3)
+            axs[i].legend(loc='upper right',fontsize=15,handlelength=3)
     makedirs("./plots/"+  dataset.dataset + "/" + dataset.dt_string,exist_ok=True)
     plt.savefig("./plots/"+  dataset.dataset + "/" + dataset.dt_string + "/" + dataset.name +'_'+param+"_vs_"+y+'.png')

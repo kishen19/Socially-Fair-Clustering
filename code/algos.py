@@ -214,21 +214,22 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
     ### 2. ALGO on group centered data
     # do nothing
 
-
+    data_groupwise = {i:{group:[x for x in dataGC[group] if x.cluster == i] for group in groups} for i in range(k)}
     flag = 0
     error = ''
     for _ in range(n_samples):
         try:
             sampled_data = []
-            rem = sample_size
-            for ind,group in enumerate(groups):
-                group_sample = rem if ind == len(groups)-1 else int(len(dataGC[group])*sample_size/n)
-                rem -= group_sample
-                selected = np.random.choice(range(len(dataGC[group])), size=group_sample, replace=False)
-                group_data = [dataGC[group][i] for i in selected]
-                for x in group_data:
-                    x.weight = len(dataGC[group])/group_sample
-                sampled_data += group_data
+            for i in range(k):
+                for group in groups:
+                    if len(data_groupwise[i][group]) < sample_size:
+                        selected = np.asarray(range(len(data_groupwise[i][group])))
+                    else:
+                        selected = np.random.choice(range(len(data_groupwise[i][group])), size=sample_size, replace=False)
+                    group_data = [data_groupwise[i][group][ind] for ind in selected]
+                    for x in group_data:
+                        x.weight = len(data_groupwise[i][group])/min(sample_size,len(data_groupwise[i][group]))
+                    sampled_data += group_data
             _st = time.time()
             new_centers,cost_ = linearprojclustering(sampled_data,k,J,d,ell,z) # Call Convex Program
             _ed = time.time()
