@@ -26,10 +26,12 @@ def PCA_cost(data,dataGC,groups,centers,data_flag):
     if data_flag:
         costs = {groups[group]:0 for group in groups}
         num = {groups[group]:0 for group in groups}
+        done = 0
         for j in range(len(dataGC)):
             for i,p in enumerate(dataGC[j]):
-                costs[groups[j]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[i])**2)
+                costs[groups[j]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[done])**2)
                 num[groups[j]] += 1
+                done+=1
         for group in costs:
             costs[group]/=num[group]
         return costs
@@ -49,10 +51,10 @@ def process(args,q):
         costs = PCA_cost(data,dataGC,groups,centers,data_flag)
     else:
         if data_flag:
-            data = dataGC[0]
+            data1 = dataGC[0]
             for j in range(1,len(dataGC)):
-                data = np.concatenate((data, dataGC[j]))
-        costs = Socially_Fair_Clustering_Cost(data,groups,centers,J,z)
+                data1 = np.concatenate((data1, dataGC[j]))
+        costs = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
     if coreset and J==0:
         coreset_costs = Socially_Fair_Clustering_Cost(coreset,groups,centers,J,z)
     else:
@@ -89,7 +91,7 @@ def processPCA(args,q):
             pca_costs = Socially_Fair_Clustering_Cost(dataP,groups,centers,J,z)
         else:
             pca_costs = {group:0 for group in costs}
-        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,0])
+        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,flag])
 
 def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
     for k in tqdm(k_vals):
@@ -115,7 +117,7 @@ def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
                                 data_flag = True # True: group centered data, False: whole centered data
                                 job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,data_flag],q))
                             else:
-                                data_flag = False
+                                data_flag = True
                                 job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,data_flag],q))
                         jobs.append(job)
         for job in tqdm(jobs):
