@@ -105,6 +105,15 @@ def german_preprocess(sens,attr):
         sens = np.asarray(sens.loc[:,"AGE"])
         svar = np.asarray([0 if sens[i]<=40 else 1 for i in range(len(sens))])
         groups = {0:">40 yrs",1:"<=40 yrs"}
+    elif attr == "AGE(multi)":
+        sens = np.asarray(sens.loc[:,"AGE"])
+        svar = np.zeros(len(sens))
+        for i in range(len(sens)):
+            if sens[i] <=  25:
+                svar[i] = 2
+            elif sens[i] <= 60:
+                svar[i] = 1
+        groups = {0:"> 60 yrs",1:"> 25, <= 60 yrs",2:"<= 25 yrs"}
     return svar,groups
 
 def bank_preprocess(sens,attr):
