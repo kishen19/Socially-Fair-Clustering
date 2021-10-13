@@ -22,39 +22,40 @@ def update(results,q,mdict):
         if flag!=0:
             results.add_new_PCA_cost(algo,k,J,cor_num,init_num,pca_costs)
     
-def PCA_cost(data,dataGC,groups,centers,data_flag):
-    if data_flag:
-        costs = {groups[group]:0 for group in groups}
-        num = {groups[group]:0 for group in groups}
-        done = 0
-        for j in range(len(dataGC)):
-            for i,p in enumerate(dataGC[j]):
-                costs[groups[j]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[done])**2)
-                num[groups[j]] += 1
-                done+=1
-        for group in costs:
-            costs[group]/=num[group]
-        return costs
-    else:
-        costs = {groups[group]:0 for group in groups}
-        num = {groups[group]:0 for group in groups}
-        for i,p in enumerate(data):
-            costs[groups[p.group]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[i])**2)
-            num[groups[p.group]] += 1
-        for group in costs:
-            costs[group]/=num[group]
-        return costs
+def PCA_cost(data,dataGC,groups,centers):
+    costs = {groups[group]:0 for group in groups}
+    num = {groups[group]:0 for group in groups}
+    done = 0
+    for j in range(len(dataGC)):
+        for i,p in enumerate(dataGC[j]):
+            costs[groups[j]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[done])**2)
+            num[groups[j]] += 1
+            done+=1
+    for group in costs:
+        costs[group]/=num[group]
+    return costs
+    # else:
+    #     costs = {groups[group]:0 for group in groups}
+    #     num = {groups[group]:0 for group in groups}
+    #     for i,p in enumerate(data):
+    #         costs[groups[p.group]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[i])**2)
+    #         num[groups[p.group]] += 1
+    #     for group in costs:
+    #         costs[group]/=num[group]
+    #     return costs
 
 def process(args,q):
-    algo,k,J,z,cor_num,init_num,data,dataGC,groups,coreset,centers,data_flag = args
-    if J > 0 and algo =="PCA":
-        costs = PCA_cost(data,dataGC,groups,centers,data_flag)
-    else:
-        if data_flag:
+    algo,k,J,z,cor_num,init_num,data,dataGC,groups,coreset,centers = args
+    if J > 0: 
+        if algo == "PCA":
+            costs = PCA_cost(data,dataGC,groups,centers)
+        else:
             data1 = dataGC[0]
             for j in range(1,len(dataGC)):
                 data1 = np.concatenate((data1, dataGC[j]))
-        costs = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
+            costs = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
+    else:
+        costs = Socially_Fair_Clustering_Cost(data,groups,centers,J,z)
     if coreset and J==0:
         coreset_costs = Socially_Fair_Clustering_Cost(coreset,groups,centers,J,z)
     else:
@@ -93,7 +94,7 @@ def processPCA(args,q):
             pca_costs = {group:0 for group in costs}
         q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,flag])
 
-def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
+def compute_costs(results,k_vals,J_vals,ALGOS,Z,flag=0):
     for k in tqdm(k_vals):
         manager = mp.Manager()
         mdict = manager.dict()
@@ -102,9 +103,9 @@ def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
         watcher = pool.apply_async(update, (results,q,mdict))
         jobs = []
         for J in J_vals:
-            for algo in algos:
+            for algo in ALGOS:
                 for cor_num in results.result[algo][k][J]:
-                    if 'ALGO' in results.result:
+                    if algo == 'ALGO':
                         coreset = results.coresets[k][J][cor_num]["data"]
                     else:
                         coreset = []
@@ -114,11 +115,9 @@ def compute_costs(results,k_vals,J_vals,algos,Z,flag=0):
                             job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.distmatrix,results.groups,results.dataP[k],centers,flag],q))
                         else:
                             if algo == 'PCA':
-                                data_flag = True # True: group centered data, False: whole centered data
-                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,data_flag],q))
+                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers],q))
                             else:
-                                data_flag = True
-                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,data_flag],q))
+                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers],q))
                         jobs.append(job)
         for job in tqdm(jobs):
             job.get()

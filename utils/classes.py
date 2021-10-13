@@ -109,7 +109,7 @@ class Dataset:
     def get_centers(self,algorithm,k,J,coreset_num,init_num):
         return self.result[algorithm][k][J][coreset_num][init_num]['centers']
         
-    def add_new_result(self, algorithm, k, J, coreset_num, init_num, running_time, centers, iters):
+    def add_new_result(self, algorithm, k, J, coreset_num, init_num, running_time, centers, iters, avg_cost=None, std=None):
         if k not in self.result[algorithm]:
             self.result[algorithm][k] = {}
         if J not in self.result[algorithm][k]:
@@ -125,6 +125,8 @@ class Dataset:
                                                             'cost':{},
                                                             'coreset_cost':{},
                                                             'PCA_cost':{},
+                                                            'avg_cost':avg_cost,
+                                                            'std':std,
                                                         }
 
     def add_new_cost(self,algorithm, k, J, coreset_num, init_num, costs, coreset_costs):
@@ -265,15 +267,22 @@ class Dataset:
             errors = []
             for J in Js[0]:
                 cost = []
+                m = 0
+                std = 0
                 for cor_num in self.result[algorithm][k][J]:
                     for init_num in self.result[algorithm][k][J][cor_num]:
                         if algorithm == 'ALGO2':
                             if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==min(20,self.iters):
                                 cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
+                                m = self.result[algorithm][k][J][cor_num][init_num]["avg_cost"]
+                                std = self.result[algorithm][k][J][cor_num][init_num]["std"]
                         else:
                             cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
-                m = np.mean(cost)
-                std = np.std(cost)
+                            m = self.result[algorithm][k][J][cor_num][init_num]["avg_cost"]
+                            std = self.result[algorithm][k][J][cor_num][init_num]["std"]
+                if m==0:
+                    m = np.mean(cost)
+                    std = np.std(cost)
                 means.append(m)
                 errors.append(std)
             vals = [means,errors]

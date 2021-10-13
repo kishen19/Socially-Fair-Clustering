@@ -3,6 +3,7 @@ import heapq
 from random import choice
 import time
 from sklearn.decomposition import PCA
+from tqdm import tqdm
 
 from utils.classes import Center,Subspace
 from utils import cluster_assign
@@ -217,7 +218,8 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
     data_groupwise = {i:{group:[x for x in dataGC[group] if x.cluster == i] for group in groups} for i in range(k)}
     flag = 0
     error = ''
-    for _ in range(n_samples):
+    costs = []
+    for _ in tqdm(range(n_samples)):
         try:
             sampled_data = []
             for i in range(k):
@@ -237,6 +239,7 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
                 best_cost = cost_
                 best_centers = new_centers
             runtime += _ed-_st
+            costs.append(cost_)
             flag = 1
         except ValueError as e:
             error = e
@@ -245,7 +248,7 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
     if flag==0:
         raise ValueError(error)
     centers = [Subspace(DTV10rounding(c,d,J),i) for i,c in enumerate(best_centers)]
-    return centers, runtime/n_samples
+    return centers, runtime/len(costs), np.mean(costs), np.std(costs)
 
 def DTV10rounding(X,d,J):
         # X is psd

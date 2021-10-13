@@ -22,12 +22,13 @@ def update(results,q,mdict):
             mdict['output'] = results
             break
         sys.stdout.flush()
-        algo,k,J,cor_num,init_num,iter,new_centers,time_taken = m
-        results.add_new_result(algo, k, J,cor_num, init_num, time_taken, new_centers, iter)
+        algo,k,J,cor_num,init_num,iter,new_centers,time_taken,avg_cost,std = m
+        results.add_new_result(algo, k, J,cor_num, init_num, time_taken, new_centers, iter, avg_cost=avg_cost, std=std)
 
 # Processing each Input
 def process(args,q):
     algo,k,J,cor_num,init_num,iter,data,dataGC,distmatrix,groups,coreset,d,ell,z,centers,n_samples,sample_size = args
+    avg_cost, std = 0,0 # Only for algo2_proj
     try:
         if algo == "ALGO":
             if J==0:
@@ -42,9 +43,9 @@ def process(args,q):
                 new_centers, time_taken = run_algo2(data,groups,k,d,ell,z,centers=centers,n_samples=n_samples,sample_size=sample_size)
             else:
                 if iter==1:
-                    new_centers, time_taken = run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,n_samples=n_samples,sample_size=sample_size,init_partition=centers)
+                    new_centers, time_taken, avg_cost, std = run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,n_samples=n_samples,sample_size=sample_size,init_partition=centers)
                 else:
-                    new_centers, time_taken = run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,n_samples=n_samples,sample_size=sample_size,centers=centers)
+                    new_centers, time_taken, avg_cost, std = run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,n_samples=n_samples,sample_size=sample_size,centers=centers)
         elif algo == "ALGO3":
             if J==0:
                 new_centers, time_taken = run_algo(data,groups,k,d,ell,z,centers=centers)
@@ -64,7 +65,7 @@ def process(args,q):
                 new_centers, time_taken = run_PCA(data,dataGC,k,d,ell,z,J,centers=centers)
         elif algo=="KMedoids":
             new_centers, time_taken = run_kmedoids(data,distmatrix,k,d,ell,z,centers=centers)
-        q.put([algo,k,J,cor_num,init_num,iter,new_centers,time_taken])        
+        q.put([algo,k,J,cor_num,init_num,iter,new_centers,time_taken,avg_cost,std])        
     except ValueError as e:
         print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
         print(e)
