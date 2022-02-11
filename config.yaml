@@ -4,35 +4,35 @@
 RUN_NEW : True
 # True or False
 # False will use the below DT_STRING
-DT_STRING : "RACE_09-10-2021_15-12-44"
+DT_STRING : "AGE(multi)_10-02-2022_14-15-09"
 
 # Name of the dataset
-DATASET : "adult"
+DATASET : "german"
 # OPTIONS: "adult", "credit", "LFW"
 
 # Name of Sensitive Attribute
-ATTR : "RACE"
+ATTR : "AGE(multi)"
 # OPTIONS:
 #   adult:      GENDER (2), RACE (5)
 #   credit:     GENDER (2), EDUCATION (2)
 #   LFW:        GENDER (2)
-#   german:     AGE (2)
+#   german:     AGE (2), AGE(multi)
 #   bank:       AGE (2), EDUCATION (2)
 #   skillcraft: AGE (2)
 #   statlog:    GENDER (2), AGE (2)
 # bank 41188 x 20
 
 # Values of k
-K_VALS : [1]
+K_VALS : [4, 6, 8, 10, 12, 14, 16]
 # Standard: [4, 6, 8, 10, 12, 14, 16]
-J_VALS : [1,2,4,8,16,32,64]
+J_VALS : [0]
 # 0: Clustering, >0 for Projective Clustering
-Z : 2
+Z : 1
 
-NUM_INITS : 1
-NUM_ITERS : 1
+NUM_INITS : 10
+NUM_ITERS : 20
 
-ALGOS : ["ALGO2","PCA"]
+ALGOS : ["ALGO2","KMedoids"]
 # OPTIONS:
 #   Clustering: "Lloyd", "Fair-Lloyd", "KMedoids", "ALGO", "ALGO2", "ALGO3"
 #   Subspace Approximation: "PCA", "Fair-PCA", "ALGO"
@@ -49,11 +49,11 @@ ISPCA : False
 ISKMEANSINIT : False
 
 ## ALGO2 related parameters ##
-ALGO2_N_SAMPLES : 10
-ALGO2_SAMPLE_SIZE : 500
+ALGO2_N_SAMPLES : 5
+ALGO2_SAMPLE_SIZE : 20
 
 # Combine.py relevant
-ITER_NUM : 1
+ITER_NUM : 20
 ONLY_PLOT : False
 FLAG : 0
 # flag 0 - cost, flag 1 - only pca_cost, flag 2 - both
