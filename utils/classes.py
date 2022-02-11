@@ -109,7 +109,7 @@ class Dataset:
     def get_centers(self,algorithm,k,J,coreset_num,init_num):
         return self.result[algorithm][k][J][coreset_num][init_num]['centers']
         
-    def add_new_result(self, algorithm, k, J, coreset_num, init_num, running_time, centers, iters, avg_cost=None, std=None):
+    def add_new_result(self, algorithm, k, J, coreset_num, init_num, running_time, centers, iters, all_centers=None):
         if k not in self.result[algorithm]:
             self.result[algorithm][k] = {}
         if J not in self.result[algorithm][k]:
@@ -125,14 +125,17 @@ class Dataset:
                                                             'cost':{},
                                                             'coreset_cost':{},
                                                             'PCA_cost':{},
-                                                            'avg_cost':avg_cost,
-                                                            'std':std,
+                                                            'all_centers':all_centers,
                                                         }
 
-    def add_new_cost(self,algorithm, k, J, coreset_num, init_num, costs, coreset_costs):
+    def add_new_cost(self,algorithm, k, J, coreset_num, init_num, costs, coreset_costs,all_costs=None):
         for group in costs:
-            self.result[algorithm][k][J][coreset_num][init_num]["cost"][group] = costs[group]
-            self.result[algorithm][k][J][coreset_num][init_num]["coreset_cost"][group] = coreset_costs[group]
+            if J>0 and algorithm == "ALGO2":
+                self.result[algorithm][k][J][coreset_num][init_num]["cost"][group] = [all_costs[group][i] for i in range(len(all_costs[group]))]
+                self.result[algorithm][k][J][coreset_num][init_num]["coreset_cost"][group] = coreset_costs[group]
+            else:
+                self.result[algorithm][k][J][coreset_num][init_num]["cost"][group] = costs[group]
+                self.result[algorithm][k][J][coreset_num][init_num]["coreset_cost"][group] = coreset_costs[group]
     
     def add_new_PCA_cost(self,algorithm, k, J, coreset_num, init_num, PCA_costs):
         for group in PCA_costs:
@@ -162,9 +165,11 @@ class Dataset:
                 cost = np.asarray([np.inf for i in range(self.ell)])
                 for cor_num in self.result[algorithm][k][J]:
                     for init_num in self.result[algorithm][k][J][cor_num]:
-                        cur_cost = [self.result[algorithm][k][J][cor_num][init_num][val][group] for group in groups]
-                        if max(cost) > max(cur_cost):
-                            cost = cur_cost
+                        print(self.result[algorithm][k][J][cor_num][init_num][val])
+                        if groups[0] in self.result[algorithm][k][J][cor_num][init_num][val]:
+                            cur_cost = [self.result[algorithm][k][J][cor_num][init_num][val][group] for group in groups]
+                            if max(cost) > max(cur_cost):
+                                cost = cur_cost
                 for i,group in enumerate(groups):
                     vals[i].append(cost[i])
             output = vals
@@ -237,7 +242,16 @@ class Dataset:
                 cost = np.asarray([np.inf for i in range(self.ell)])
                 for cor_num in self.result[algorithm][k][J]:
                     for init_num in self.result[algorithm][k][J][cor_num]:
-                        cur_cost = [self.result[algorithm][k][J][cor_num][init_num][val][group] for group in groups]
+                        if algorithm=="ALGO2":
+                            cur_cost = [np.inf for group in groups]
+                            for i in range(len(self.result[algorithm][k][J][cor_num][init_num][val][groups[0]])):
+                                if max([self.result[algorithm][k][J][cor_num][init_num][val][group][i] for group in groups])<max(cur_cost):
+                                    cur_cost = [self.result[algorithm][k][J][cor_num][init_num][val][group][i] for group in groups]
+                        else:
+                            cur_cost = [self.result[algorithm][k][J][cor_num][init_num][val][group] for group in groups]
+                        # if algorithm=="ALGO2":
+                        #     print(self.result[algorithm][k][J][cor_num][init_num]["best"][0].basis,"in main.py")
+                        #     print(self.result[algorithm][k][J][cor_num][init_num]["centers"][0].basis,"in combine.py")
                         if max(cost) > max(cur_cost):
                             cost = cur_cost
                 for i,group in enumerate(groups):
@@ -259,6 +273,7 @@ class Dataset:
                 vals.append(max(cost)/min(cost))
             output.append(vals)
             index.append(algorithm)
+            
         elif val=="average cost" or val=="average coreset cost":
             groups = sorted(self.groups.values())
             Js = [sorted(self.result[algorithm][k].keys())]
@@ -272,17 +287,16 @@ class Dataset:
                 for cor_num in self.result[algorithm][k][J]:
                     for init_num in self.result[algorithm][k][J][cor_num]:
                         if algorithm == 'ALGO2':
-                            if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==min(20,self.iters):
-                                cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
-                                m = self.result[algorithm][k][J][cor_num][init_num]["avg_cost"]
-                                std = self.result[algorithm][k][J][cor_num][init_num]["std"]
+                            for i in range(len(self.result[algorithm][k][J][cor_num][init_num]['cost'][groups[0]])):
+                                cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group][i] for group in groups]))
+                            # if self.result[algorithm][k][J][cor_num][init_num]["num_iters"]==min(20,self.iters):
+                                # cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
                         else:
                             cost.append(max([self.result[algorithm][k][J][cor_num][init_num]['cost'][group] for group in groups]))
-                            m = self.result[algorithm][k][J][cor_num][init_num]["avg_cost"]
-                            std = self.result[algorithm][k][J][cor_num][init_num]["std"]
-                if m==0:
-                    m = np.mean(cost)
-                    std = np.std(cost)
+                # if m==0:
+                m = np.mean(cost)
+                std = np.std(cost)
+                # print('best',algorithm,J,self.result[algorithm][k][J][cor_num][init_num]["best"])
                 means.append(m)
                 errors.append(std)
             vals = [means,errors]

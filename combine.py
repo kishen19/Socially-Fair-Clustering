@@ -15,10 +15,10 @@ def update(results,q,mdict):
         if m==[]:
             mdict['output'] = results
             break
-        algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,flag = m
+        algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,all_costs,flag = m
         # flag 0 - cost, flag 1 - only pca_cost, flag 2 - both
         if flag!=1:
-            results.add_new_cost(algo,k,J,cor_num,init_num,costs,coreset_costs)
+            results.add_new_cost(algo,k,J,cor_num,init_num,costs,coreset_costs,all_costs)
         if flag!=0:
             results.add_new_PCA_cost(algo,k,J,cor_num,init_num,pca_costs)
     
@@ -45,54 +45,85 @@ def PCA_cost(data,dataGC,groups,centers):
     #     return costs
 
 def process(args,q):
-    algo,k,J,z,cor_num,init_num,data,dataGC,groups,coreset,centers = args
-    if J > 0: 
+    algo,k,J,z,cor_num,init_num,data,dataGC,groups,coreset,centers,all_centers = args
+    if J > 0:
         if algo == "PCA":
             costs = PCA_cost(data,dataGC,groups,centers)
         else:
             data1 = dataGC[0]
             for j in range(1,len(dataGC)):
                 data1 = np.concatenate((data1, dataGC[j]))
+            
             costs = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
+            # vvvv = [x.cx[:5] for x in data1]
+            # for y in vvvv[-5:]:
+            #     print(y)
+            # print(centers[0].basis)
+            # print(len(centers))
+            # print(groups,J,z)
+            # print(costs,"J=",J)
     else:
         costs = Socially_Fair_Clustering_Cost(data,groups,centers,J,z)
     if coreset and J==0:
         coreset_costs = Socially_Fair_Clustering_Cost(coreset,groups,centers,J,z)
     else:
         coreset_costs = {group:0 for group in costs}
+    if J>0 and algo=="ALGO2":
+        all_costs = {groups[group]:[] for group in groups}
+        data1 = dataGC[0]
+        for j in range(1,len(dataGC)):
+            data1 = np.concatenate((data1, dataGC[j]))
+        for i in range(len(all_centers)):
+            costsi = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
+            for group in groups:
+                all_costs[groups[group]].append(costsi[groups[group]])
+    else:
+        all_costs = {groups[group]:[] for group in groups}
     pca_costs = {group:0 for group in costs}
-    q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,0])
+    q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,all_costs,0])
 
 def processPCA(args,q):
     algo,k,J,z,cor_num,init_num,data,distmatrix,groups,dataP,centers,flag = args
     n = len(data)
     d = len(data[0].cx)
     ell = len(groups)
-    if J==0:
-        if flag != 1:
-            assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
-            for i in range(n):
-                data[i].cluster = assign[i]
-                dataP[i].cluster = assign[i]
+    all_costs = []
+    try:
+        if J==0:
+            if flag != 1:
+                assign = cluster_assign.cluster_assign(np.asarray([x.cx for x in dataP]),np.asarray([c.cx for c in centers]))
+                for i in range(n):
+                    data[i].cluster = assign[i]
+                    dataP[i].cluster = assign[i]
 
-            if "ALGO" in algo:
-                new_centers,time_taken = run_algo(data,k,d,ell,z,centers=None)
-            elif algo == "Lloyd":
-                new_centers,time_taken = run_lloyd(data,k,d,ell,z)
-            elif algo == "Fair-Lloyd":
-                new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z)
-            elif algo=="KMedoids":
-                new_centers,time_taken = run_kmedoids(data,distmatrix,k,d,ell,z,centers=centers)
-            costs = Socially_Fair_Clustering_Cost(data,groups,new_centers,J,z)
-            coreset_costs = {group:0 for group in costs}
-        else:
-            costs = {groups[group]:0 for group in groups}
-            coreset_costs = {group:0 for group in costs}
-        if flag != 0:
-            pca_costs = Socially_Fair_Clustering_Cost(dataP,groups,centers,J,z)
-        else:
-            pca_costs = {group:0 for group in costs}
-        q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,flag])
+                if "ALGO" in algo:
+                    new_centers,time_taken = run_algo(data,k,d,ell,z,centers=None)
+                elif algo == "Lloyd":
+                    new_centers,time_taken = run_lloyd(data,k,d,ell,z)
+                elif algo == "Fair-Lloyd":
+                    new_centers,time_taken = run_fair_lloyd(data,k,d,ell,z)
+                elif algo=="KMedoids":
+                    new_centers,time_taken = run_kmedoids(data,distmatrix,k,d,ell,z,centers=centers)
+                costs = Socially_Fair_Clustering_Cost(data,groups,new_centers,J,z)
+                coreset_costs = {group:0 for group in costs}
+            else:
+                costs = {groups[group]:0 for group in groups}
+                coreset_costs = {group:0 for group in costs}
+            if flag != 0:
+                pca_costs = Socially_Fair_Clustering_Cost(dataP,groups,centers,J,z)
+            else:
+                pca_costs = {group:0 for group in costs}
+            q.put([algo,k,J,cor_num,init_num,costs,coreset_costs,pca_costs,all_costs,flag])
+    except ValueError as e:
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e,flush=True)
+    except ArithmeticError as e:
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e,flush=True)
+    except TypeError as e:
+        print(algo+": Failed: k="+str(k),"cor_num="+str(cor_num),"init="+str(init_num))
+        print(e,flush=True)
+
 
 def compute_costs(results,k_vals,J_vals,ALGOS,Z,flag=0):
     for k in tqdm(k_vals):
@@ -111,13 +142,17 @@ def compute_costs(results,k_vals,J_vals,ALGOS,Z,flag=0):
                         coreset = []
                     for init_num in results.result[algo][k][J][cor_num]:
                         centers = results.result[algo][k][J][cor_num][init_num]["centers"]
+                        all_centers = results.result[algo][k][J][cor_num][init_num]["all_centers"]
+                        # if algo=="ALGO2":
+                        #     print(centers[0].basis,"in combine.py","J=",J)
+                        #     print(results.result[algo][k][J][cor_num][init_num]["best"][0].basis,"in main.py","J=",J)
                         if results.isPCA:
                             job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.distmatrix,results.groups,results.dataP[k],centers,flag],q))
                         else:
                             if algo == 'PCA':
-                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers],q))
+                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,all_centers],q))
                             else:
-                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers],q))
+                                job = pool.apply_async(process,([algo,k,J,Z,cor_num,init_num,results.data,results.dataGC,results.groups,coreset,centers,all_centers],q))
                         jobs.append(job)
         for job in tqdm(jobs):
             job.get()
@@ -182,7 +217,7 @@ def main():
     plot([results], 'cost', param)
     plot([results], 'running_time', param)
     plot([results], 'average cost',param)
-    plot([results], 'cost_ratio', param)
+    # plot([results], 'cost_ratio', param)
 
 
 if __name__=="__main__":

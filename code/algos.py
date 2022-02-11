@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from tqdm import tqdm
 
 from utils.classes import Center,Subspace
+from utils.utilities import Socially_Fair_Clustering_Cost
 from utils import cluster_assign
 from code.convex_prog import kzclustering,kzclustering_means,linearprojclustering
 from code.fair_lloyd import solve_kmeans_clustering
@@ -216,9 +217,13 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
     # do nothing
 
     data_groupwise = {i:{group:[x for x in dataGC[group] if x.cluster == i] for group in groups} for i in range(k)}
+    data1 = dataGC[0]
+    for j in range(1,len(dataGC)):
+        data1 = np.concatenate((data1, dataGC[j]))
+    
     flag = 0
     error = ''
-    costs = []
+    all_centers = []
     for _ in tqdm(range(n_samples)):
         try:
             sampled_data = []
@@ -235,11 +240,21 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
             _st = time.time()
             new_centers,cost_ = linearprojclustering(sampled_data,k,J,d,ell,z) # Call Convex Program
             _ed = time.time()
-            if cost_ < best_cost:
-                best_cost = cost_
-                best_centers = new_centers
+            centers = [Subspace(DTV10rounding(c,d,J),i) for i,c in enumerate(new_centers)]
+            # costs_ = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
+            # vvvv = [x.cx[:5] for x in data1]
+            # for y in vvvv[-5:]:
+            #     print(y)
+            # print(centers[0].basis)
+            # print(len(centers))
+            # print(groups,J,z)
+            # print(costs_,"J=",J)
+            # if max(costs_.values()) < best_cost:
+            #     best_cost = max(costs_.values())
+            #     best_centers = centers
+            best_centers = centers
             runtime += _ed-_st
-            costs.append(cost_)
+            all_centers.append(centers)
             flag = 1
         except ValueError as e:
             error = e
@@ -247,8 +262,7 @@ def run_algo_proj2(data,dataGC,groups,k,d,ell,z,J,centers=None,init_partition=No
             error = e
     if flag==0:
         raise ValueError(error)
-    centers = [Subspace(DTV10rounding(c,d,J),i) for i,c in enumerate(best_centers)]
-    return centers, runtime/len(costs), np.mean(costs), np.std(costs)
+    return best_centers, runtime/len(all_centers), all_centers
 
 def DTV10rounding(X,d,J):
         # X is psd

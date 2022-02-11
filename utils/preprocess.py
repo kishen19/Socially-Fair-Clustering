@@ -119,8 +119,8 @@ def german_preprocess(sens,attr):
 def bank_preprocess(sens,attr):
     if attr == "AGE":
         sens = np.asarray(sens.loc[:,"age"])
-        svar = np.asarray([0 if sens[i] > 40 else 1 for i in range(len(sens))])
-        groups = {0:"> 40 yrs",1:"<= 40 yrs"}
+        svar = np.asarray([0 if sens[i] <= 25 else (2 if sens[i]>=60 else 1) for i in range(len(sens))])
+        groups = {0:"<= 25 yrs",1:"25-60 yrs", 2: ">=60"}
     elif attr == "EDUCATION":
         sens = np.asarray(sens.loc[:,"education"])
         svar = np.asarray([1 if (sens[i][:4]=="prof" or sens[i][:4]=="univ") else 0 for i in range(len(sens))])
@@ -130,8 +130,8 @@ def bank_preprocess(sens,attr):
 def skillcraft_preprocess(sens,attr):
     if attr == "AGE":
         sens = np.asarray(sens.loc[:,"Age"])
-        svar = np.asarray([0 if sens[i] >= 21 else 1 for i in range(len(sens))])
-        groups = {0:">= 21 yrs",1:"< 21 yrs"}
+        svar = np.asarray([0 if sens[i] <= 21 else 1 for i in range(len(sens))])
+        groups = {0:"<= 21 yrs",1:"> 21 yrs"}
     return svar,groups
 
 def statlog_preprocess(sens,attr):
