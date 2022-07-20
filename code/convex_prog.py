@@ -2,19 +2,7 @@ from cvxopt import solvers, matrix
 import cvxpy as cp
 import numpy as np
 
-# %env JAX_ENABLE_X64=1
-# %env JAX_PLATFORM_NAME=cpu
-
-# import autograd.numpy as jnp
-# from autograd import grad
-
-# import jax
-# import jax.numpy as jnp
-# from jax import grad
-# from jax.ops import index, index_add, index_update
-
 def kzclustering(data, k, d, ell, q, centers):
-
     # ~~~ parameters ~~~
     # k:    the number of clusters; python float
     # d:    dimension; python float
@@ -119,7 +107,6 @@ def kzclustering(data, k, d, ell, q, centers):
 
 
 def kzclustering_means(data, k, d, ell, q, centers):
-
     # ~~~ parameters ~~~
     # k:    the number of clusters; python float
     # d:    dimension; python float
@@ -240,104 +227,6 @@ def kzclustering_means(data, k, d, ell, q, centers):
     val = sol['x'][-1]
     centers = centers.reshape((k,d))
     return  centers, val
-    
-# def kzclustering_SGD(data, k, d, ell, q):
-
-#     # ~~~ parameters ~~~
-#     # k:    the number of clusters; python float
-#     # d:    dimension; python float
-#     # ell:  number of groups; python int
-#     # data: List of Point Objects
-#     # Let P_{ji} be points of group j in cluster i
-#     wts = [[0 for i in range(k)] for j in range(ell)]
-#     for p in data:
-#         wts[p.group][p.cluster] += p.weight
-#     # print("in grad descent")
-#     def func(x):
-#         f = np.zeros(ell)
-#         for p in data:
-#             f[int(p.group)] += p.weight*np.linalg.norm(x[p.cluster] - p.cx)**q
-            
-#         Df = np.zeros((ell,k,d))
-
-#         for p in data:
-#             S_p = np.linalg.norm(x[p.cluster] - p.cx)**2
-#             Df[int(p.group),p.cluster] += p.weight*q*(S_p**(q/2-1))*(x[p.cluster] - p.cx)
-        
-#         for j in range(ell):
-#             f[j] /= sum(wts[j])
-#             Df[j] /= sum(wts[j])
-        
-#         max_j = np.argmax(f)
-#         return f[max_j], Df[max_j]
-#         # f = [0.0]*ell
-#         # # f = jnp.zeros(ell)
-#         # for p in data:
-#         #     f[int(p.group)] += p.weight*(jnp.linalg.norm(x[p.cluster] - p.cx))**2
-#         # for j in range(ell):
-#         #     f[j] = f[j]/sum(wts[j])
-#         # return max(f)
-    
-#     centers = np.zeros((k,d))
-#     learning_rate = 0.01
-    
-#     for i in range(1000):
-#         val, grads = func(centers)
-#         centers -= learning_rate * grads
-        
-
-#         if i % 10 == 0:
-#             learning_rate -= 0.00005
-#             # print(val, learning_rate)
-        
-
-#     return centers, val
-
-
-
-# def kzclustering_SGD(data, k, d, ell, q):
-
-#     # ~~~ parameters ~~~
-#     # k:    the number of clusters; python float
-#     # d:    dimension; python float
-#     # ell:  number of groups; python int
-#     # data: List of Point Objects
-#     # Let P_{ji} be points of group j in cluster i
-#     wts = [[0 for i in range(k)] for j in range(ell)]
-#     for p in data:
-#         wts[p.group][p.cluster] += p.weight
-#     # print("in grad descent")
-#     def func(x):
-#         f = jnp.zeros(ell)
-#         for p in data:
-#             f = index_add(f, index[p.group], p.weight*(jnp.linalg.norm(x[p.cluster] - p.cx))**2)
-#         for j in range(ell):
-#             f = index_update(f, index[j], f[j]/sum(wts[j]))
-#         return jnp.amax(f)
-        
-#         # f = [0.0]*ell
-#         # # f = jnp.zeros(ell)
-#         # for p in data:
-#         #     f[int(p.group)] += p.weight*(jnp.linalg.norm(x[p.cluster] - p.cx))**2
-#         # for j in range(ell):
-#         #     f[j] = f[j]/sum(wts[j])
-#         # return max(f)
-    
-#     centers = jnp.zeros((k,d))
-#     learning_rate = 0.001
-#     grad_f = jax.jit(grad(func))
-#     print('before')
-#     grad_f(centers)
-#     print('after')
-#     for i in range(100):
-#         centers -= learning_rate * grad_f(centers)
-#         learning_rate*0.5
-
-#         if i % 10 == 0:
-#             print(func(centers))
-        
-
-#     return centers, func(centers)
 
 def linearprojclustering(data, k, J, d, ell, q):
     wts = [[0 for i in range(k)] for j in range(ell)]
@@ -364,10 +253,6 @@ def linearprojclustering(data, k, J, d, ell, q):
         obj[j] /= sum(wts[j])
                             
     constraints += [obj[j] <= t for j in range(ell)]
-    
-
-    # constraints += [np.sum( [wt_a/normalisationfactor*np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[:2]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[4:6]]) <= t]
-    # constraints += [np.sum( [np.power( (np.transpose(a)@X[0])@a, p*0.5) for a in points[2:4]] + [np.power( (np.transpose(a)@X[1])@a, p*0.5) for a in points[6:8]]) <= t]
 
     prob = cp.Problem(cp.Minimize(t), constraints)
     prob.solve(solver='MOSEK')
@@ -376,31 +261,3 @@ def linearprojclustering(data, k, J, d, ell, q):
     # print("The optimal value is", prob.value)
     
     return [X[i].value for i in range(len(X))], prob.value
-
-# def kzclustering(data, k, d, ell, q):
-#     wts = [[0 for i in range(k)] for j in range(ell)]
-#     for p in data:
-#         wts[p.group][p.cluster] += p.weight
-
-#     X = []
-#     for i in range(k):
-#         X.append(cp.Variable((1,d)))
-#     t = cp.Variable()
-#     obj = [0 for j in range(ell)]
-    
-#     for p in data:
-#         cx = np.array([p.cx])
-#         obj[int(p.group)] += p.weight*np.power( cp.atoms.norm(cx-X[int(p.cluster)]) ,q)    
-
-    
-#     for j in range(ell):
-#         obj[j] /= sum(wts[j])
-                            
-#     constraints = [obj[j] <= t for j in range(ell)]
-#     prob = cp.Problem(cp.Minimize(t), constraints)
-#     prob.solve(verbose=True)
-#     centers = [X[i].value[0] for i in range(len(X))]
-#     cost = prob.value
-
-
-#     return centers, cost

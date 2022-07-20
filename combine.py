@@ -3,11 +3,9 @@ import numpy as np
 from tqdm import tqdm
 import multiprocessing as mp
 
-from code.algos import run_algo, run_algo2, run_fair_lloyd, run_lloyd, run_kmedoids
+from code.algos import run_algo, run_fair_lloyd, run_lloyd, run_kmedoids
 from utils import cluster_assign
 from utils.utilities import Socially_Fair_Clustering_Cost, plot
-from utils.classes import Point,Dataset
-from utils.preprocess import get_data
 
 def update(results,q,mdict):
     while 1:
@@ -34,15 +32,6 @@ def PCA_cost(data,dataGC,groups,centers):
     for group in costs:
         costs[group]/=num[group]
     return costs
-    # else:
-    #     costs = {groups[group]:0 for group in groups}
-    #     num = {groups[group]:0 for group in groups}
-    #     for i,p in enumerate(data):
-    #         costs[groups[p.group]] += (np.linalg.norm(p.cx)**2 - np.linalg.norm(centers[0].basis[i])**2)
-    #         num[groups[p.group]] += 1
-    #     for group in costs:
-    #         costs[group]/=num[group]
-    #     return costs
 
 def process(args,q):
     algo,k,J,z,cor_num,init_num,data,dataGC,groups,coreset,centers,all_centers = args
@@ -55,13 +44,6 @@ def process(args,q):
                 data1 = np.concatenate((data1, dataGC[j]))
             
             costs = Socially_Fair_Clustering_Cost(data1,groups,centers,J,z)
-            # vvvv = [x.cx[:5] for x in data1]
-            # for y in vvvv[-5:]:
-            #     print(y)
-            # print(centers[0].basis)
-            # print(len(centers))
-            # print(groups,J,z)
-            # print(costs,"J=",J)
     else:
         costs = Socially_Fair_Clustering_Cost(data,groups,centers,J,z)
     if coreset and J==0:
@@ -143,9 +125,6 @@ def compute_costs(results,k_vals,J_vals,ALGOS,Z,flag=0):
                     for init_num in results.result[algo][k][J][cor_num]:
                         centers = results.result[algo][k][J][cor_num][init_num]["centers"]
                         all_centers = results.result[algo][k][J][cor_num][init_num]["all_centers"]
-                        # if algo=="ALGO2":
-                        #     print(centers[0].basis,"in combine.py","J=",J)
-                        #     print(results.result[algo][k][J][cor_num][init_num]["best"][0].basis,"in main.py","J=",J)
                         if results.isPCA:
                             job = pool.apply_async(processPCA,([algo,k,J,Z,cor_num,init_num,results.data,results.distmatrix,results.groups,results.dataP[k],centers,flag],q))
                         else:
@@ -199,16 +178,6 @@ def main():
     f = open("./results/"+DATASET+"/" + DT_STRING + "/" + NAME + "_iters="+str(ITER_NUM),"rb")
     results = pickle.load(f)
     f.close()
-    
-    # for algo in results.result:
-    #     for k in results.result[algo]:
-    #         for J in results.result[algo][k]:
-    #             for cor_num in results.result[algo][k][J]:
-    #                 for init_num in results.result[algo][k][J][cor_num]:
-    #                     print(algo+"> k="+str(k),"J="+str(J),"cor_num="+str(cor_num),"init="+str(init_num),"->")
-    #                     for group in results.result[algo][k][J][cor_num][init_num]["cost"]:
-    #                         print("\t"+group+":",results.result[algo][k][J][cor_num][init_num]["cost"][group],end=" ")
-    #                     print()
                        
     if 0 in J_VALS:
         param="k"
